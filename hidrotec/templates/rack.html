@@ -1,0 +1,560 @@
+ <!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hidro-Tec - Gerenciamento de Racks</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --navbar-bg-color: #B7BFAF;
+            --navbar-text-color: #212529;
+            --logo-height: 100px;
+            --user-font-size: 1.1rem;
+            --farm-name-font-size: 1.8rem;
+            --btn-adicionar-color: #63d003;
+            --btn-remover-color: #b11804;
+            --btn-editar-color: #F68300;
+        }
+        
+        body {
+            background-color: #CED0CC;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .custom-navbar {
+            background-color: var(--navbar-bg-color) !important;
+            color: var(--navbar-text-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 10px 0;
+        }
+        
+        .action-bar {
+            background-color: #CED0CC;
+            padding: 10px 0;
+            margin-bottom: 20px;
+        }
+        
+        .action-btn {
+            padding: 8px 20px;
+            margin: 0 5px;
+            border-radius: 5px;
+            font-weight: 600;
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            opacity: 0.9;
+        }
+        
+        .btn-adicionar {
+            background-color: var(--btn-adicionar-color);
+        }
+        
+        .btn-remover {
+            background-color: var(--btn-remover-color);
+        }
+        
+        .btn-editar {
+            background-color: var(--btn-editar-color);
+        }
+
+        .custom-navbar .navbar-brand img {
+            height: var(--logo-height);
+            transition: all 0.3s ease;
+        }
+        
+        .farm-name {
+            font-size: var(--farm-name-font-size);
+            font-weight: 700;
+            color: #2c3e50;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .user-area {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+        }
+        
+        .user-name {
+            font-size: var(--user-font-size);
+            font-weight: 800;
+            margin-left: 10px;
+            color: #2c3e50;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Estilos para os modais */
+        .modal-form .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .modal-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .modal-form input, 
+        .modal-form select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+        
+        /* Estilo para a lista de racks */
+        .racks-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .rack-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .rack-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Estilo para o display de capacidade */
+        #displayCapacidade {
+            margin-bottom: 20px;
+        }
+
+        #displayCapacidade .alert {
+            margin-bottom: 0;
+        }
+        
+        @media (max-width: 992px) {
+            .farm-name {
+                position: static;
+                transform: none;
+                text-align: center;
+                width: 100%;
+                margin: 10px 0;
+                order: 3;
+            }
+            
+            .navbar-collapse {
+                flex-direction: column;
+            }
+            
+            .user-area {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+            
+            .action-bar .d-flex {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-btn {
+                margin: 5px 0;
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegação -->
+    <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <img src="logo_hidrotec.png" alt="Hidro-Tec Logo" class="img-fluid">
+            </a>
+            
+            <div class="farm-name d-none d-lg-block">
+                FAZENDA OURO FINO          
+            </div>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <div class="farm-name d-lg-none text-center mb-3">
+                    FAZENDA OURO FINO
+                </div>
+                
+                <div class="user-area">
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
+                            <img src="user.png" alt="Avatar" class="user-avatar">
+                            <span class="user-name d-none d-sm-inline">Arthur Vicente</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="telaprincipal.html"><i class="bi bi-boxes me-2"></i>HOME</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Barra de botões de ação -->
+    <div class="action-bar">
+        <div class="container">
+            <div class="d-flex justify-content-center">
+                <button class="action-btn btn-adicionar" data-bs-toggle="modal" data-bs-target="#modalAdicionar">
+                    <i class="bi bi-plus-circle"></i> ADICIONAR RACK
+                </button>
+                
+                <button class="action-btn btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar">
+                    <i class="bi bi-pencil"></i> EDITAR RACK
+                </button>
+                
+                <button class="action-btn btn-remover" data-bs-toggle="modal" data-bs-target="#modalRemover">
+                    <i class="bi bi-trash"></i> REMOVER RACK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de racks -->
+    <div class="container racks-container">
+        <div id="displayCapacidade"></div>
+        <h4 class="mb-4">Racks Cadastrados</h4>
+        <div id="listaRacks">
+            <!-- Os racks serão inseridos aqui dinamicamente -->
+            <p class="text-muted">Nenhum rack cadastrado ainda.</p>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar -->
+    <div class="modal fade" id="modalAdicionar" tabindex="-1" aria-labelledby="modalAdicionarLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAdicionarLabel"><i class="bi bi-plus-circle"></i> Adicionar Rack</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body modal-form">
+                    <form id="formAdicionar">
+                        <div class="form-group">
+                            <label for="nomeRack">Nome do Rack:</label>
+                            <input type="text" id="nomeRack" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="quantidadeRack">Quantidade:</label>
+                            <input type="number" id="quantidadeRack" min="1" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" onclick="adicionarRack()">Adicionar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar -->
+    <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditarLabel"><i class="bi bi-pencil"></i> Editar Rack</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body modal-form">
+                    <form id="formEditar">
+                        <div class="form-group">
+                            <label for="rackEditar">Selecione o rack:</label>
+                            <select id="rackEditar" class="form-select" onchange="carregarDadosRack()" required>
+                                <option value="">Selecione um rack...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="novoNomeRack">Novo Nome:</label>
+                            <input type="text" id="novoNomeRack" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="novaQuantidadeRack">Nova Quantidade:</label>
+                            <input type="number" id="novaQuantidadeRack" min="1" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-warning text-white" onclick="editarRack()">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Remover -->
+    <div class="modal fade" id="modalRemover" tabindex="-1" aria-labelledby="modalRemoverLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalRemoverLabel"><i class="bi bi-trash"></i> Remover Rack</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body modal-form">
+                    <form id="formRemover">
+                        <div class="form-group">
+                            <label for="rackRemover">Selecione o rack para remover:</label>
+                            <select id="rackRemover" class="form-select" required>
+                                <option value="">Selecione um rack...</option>
+                            </select>
+                        </div>
+                        <div class="alert alert-warning mt-3">
+                            <i class="bi bi-exclamation-triangle"></i> Esta ação não pode ser desfeita!
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" onclick="removerRack()">Confirmar Remoção</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inclusão do JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Array para armazenar os racks
+        let racks = [];
+
+        // Carrega racks do localStorage ao iniciar
+        function carregarRacksDoLocalStorage() {
+            const racksSalvos = localStorage.getItem('racks');
+            if (racksSalvos) {
+                racks = JSON.parse(racksSalvos);
+                atualizarSelectsRacks();
+                atualizarListaRacks();
+            }
+        }
+
+        // Função para salvar racks no localStorage
+        function salvarRacksNoLocalStorage() {
+            localStorage.setItem('racks', JSON.stringify(racks));
+        }
+
+        // Função para calcular a capacidade total
+        function calcularCapacidadeTotal() {
+            return racks.reduce((total, rack) => {
+                return total + parseInt(rack.quantidade);
+            }, 0);
+        }
+
+        // Função para atualizar o display de capacidade
+        function atualizarDisplayCapacidade() {
+            const capacidadeTotal = calcularCapacidadeTotal();
+            const displayElement = document.getElementById('displayCapacidade');
+            
+            displayElement.innerHTML = `
+                <div class="alert alert-info">
+                    Capacidade total dos racks: <strong>${capacidadeTotal}</strong> espaços disponíveis
+                </div>
+            `;
+        }
+        
+        // Função para atualizar a lista de racks nos selects
+        function atualizarSelectsRacks() {
+            const selectEditar = document.getElementById('rackEditar');
+            const selectRemover = document.getElementById('rackRemover');
+            
+            // Limpar selects
+            selectEditar.innerHTML = '<option value="">Selecione um rack...</option>';
+            selectRemover.innerHTML = '<option value="">Selecione um rack...</option>';
+            
+            // Adicionar racks aos selects
+            racks.forEach(rack => {
+                const option = document.createElement('option');
+                option.value = rack.id;
+                option.textContent = `${rack.nome} (Quantidade: ${rack.quantidade})`;
+                
+                selectEditar.appendChild(option.cloneNode(true));
+                selectRemover.appendChild(option.cloneNode(true));
+            });
+            
+            // Atualizar lista visual e display de capacidade
+            atualizarListaRacks();
+            atualizarDisplayCapacidade();
+        }
+        
+        // Função para atualizar a lista visual de racks
+        function atualizarListaRacks() {
+            const listaRacks = document.getElementById('listaRacks');
+            
+            if (racks.length === 0) {
+                listaRacks.innerHTML = '<p class="text-muted">Nenhum rack cadastrado ainda.</p>';
+                return;
+            }
+            
+            listaRacks.innerHTML = '';
+            
+            racks.forEach(rack => {
+                const rackElement = document.createElement('div');
+                rackElement.className = 'rack-item';
+                rackElement.innerHTML = `
+                    <div>
+                        <strong>${rack.nome}</strong>
+                        <span class="text-muted"> - Quantidade: ${rack.quantidade}</span>
+                    </div>
+                    <small class="text-muted">ID: ${rack.id}</small>
+                `;
+                listaRacks.appendChild(rackElement);
+            });
+        }
+        
+        // Função para adicionar rack
+        function adicionarRack() {
+            const nome = document.getElementById('nomeRack').value.trim();
+            const quantidade = document.getElementById('quantidadeRack').value;
+            
+            // Validação
+            if (!nome || !quantidade) {
+                alert('Por favor, preencha todos os campos!');
+                return;
+            }
+            
+            // Criar novo rack
+            const novoRack = {
+                id: Date.now(), // Usamos o timestamp como ID simples
+                nome: nome,
+                quantidade: quantidade
+            };
+            
+            // Adicionar ao array
+            racks.push(novoRack);
+            
+            // Atualizar selects e lista
+            atualizarSelectsRacks();
+            
+            // Salvar no localStorage
+            salvarRacksNoLocalStorage();
+            
+            // Fechar modal e limpar formulário
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalAdicionar'));
+            modal.hide();
+            document.getElementById('formAdicionar').reset();
+            
+            // Feedback
+            alert('Rack adicionado com sucesso!');
+        }
+        
+        // Função para carregar dados do rack selecionado para edição
+        function carregarDadosRack() {
+            const rackId = parseInt(document.getElementById('rackEditar').value);
+            if (!rackId) return;
+            
+            const rack = racks.find(r => r.id === rackId);
+            if (rack) {
+                document.getElementById('novoNomeRack').value = rack.nome;
+                document.getElementById('novaQuantidadeRack').value = rack.quantidade;
+            }
+        }
+        
+        // Função para editar rack
+        function editarRack() {
+            const rackId = parseInt(document.getElementById('rackEditar').value);
+            const novoNome = document.getElementById('novoNomeRack').value.trim();
+            const novaQuantidade = document.getElementById('novaQuantidadeRack').value;
+            
+            // Validação
+            if (!rackId || !novoNome || !novaQuantidade) {
+                alert('Por favor, preencha todos os campos!');
+                return;
+            }
+            
+            // Encontrar e atualizar o rack
+            const rackIndex = racks.findIndex(r => r.id === rackId);
+            if (rackIndex !== -1) {
+                racks[rackIndex].nome = novoNome;
+                racks[rackIndex].quantidade = novaQuantidade;
+            }
+            
+            // Atualizar selects e lista
+            atualizarSelectsRacks();
+            
+            // Salvar no localStorage
+            salvarRacksNoLocalStorage();
+            
+            // Fechar modal e limpar formulário
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
+            modal.hide();
+            document.getElementById('formEditar').reset();
+            
+            // Feedback
+            alert('Rack atualizado com sucesso!');
+        }
+        
+        // Função para remover rack
+        function removerRack() {
+            const rackId = parseInt(document.getElementById('rackRemover').value);
+            
+            // Validação
+            if (!rackId) {
+                alert('Por favor, selecione um rack para remover!');
+                return;
+            }
+            
+            // Confirmação
+            if (!confirm('Tem certeza que deseja remover este rack permanentemente?')) {
+                return;
+            }
+            
+            // Remover o rack do array
+            racks = racks.filter(r => r.id !== rackId);
+            
+            // Atualizar selects e lista
+            atualizarSelectsRacks();
+            
+            // Salvar no localStorage
+            salvarRacksNoLocalStorage();
+            
+            // Fechar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalRemover'));
+            modal.hide();
+            
+            // Feedback
+            alert('Rack removido com sucesso!');
+        }
+        
+        // Event listeners para carregar racks quando os modais são abertos
+        document.getElementById('modalEditar').addEventListener('show.bs.modal', function() {
+            atualizarSelectsRacks();
+        });
+        
+        document.getElementById('modalRemover').addEventListener('show.bs.modal', function() {
+            atualizarSelectsRacks();
+        });
+
+        // Carrega os racks ao iniciar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarRacksDoLocalStorage();
+        });
+    </script>
+</body>
+</html>

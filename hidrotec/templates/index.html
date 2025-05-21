@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<!-- Declaração do tipo de documento HTML5 -->
+<html lang="pt-br">
+<!-- Define o idioma da página como português do Brasil -->
+<head>
+    <!-- Cabeçalho do documento com metadados e recursos externos -->
+    <meta charset="UTF-8">
+    <!-- Define a codificação de caracteres como UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Configura a viewport para responsividade em dispositivos móveis -->
+    <title>Hidro-Tec - Login</title>
+    <!-- Título da página que aparece na aba do navegador -->
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Carrega o framework Bootstrap 5 para estilização responsiva -->
+    
+    <style>
+        /* Estilos CSS personalizados */
+        
+        /* Estilo do corpo da página */
+        body {
+            margin: 0;  /* Remove margens padrão */
+            padding: 0; /* Remove paddings padrão */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Define uma hierarquia de fontes modernas */
+            background: url('fundo_hidro.png') no-repeat center center fixed;
+            /* Define uma imagem de fundo fixa e centralizada */
+            background-size: cover; /* Faz a imagem cobrir todo o fundo */
+            height: 100vh; /* Altura igual a 100% da viewport */
+            display: flex; /* Ativa o modelo flexbox */
+            justify-content: center; /* Centraliza horizontalmente */
+            align-items: center; /* Centraliza verticalmente */
+        }
+        
+        /* Camada semi-transparente sobre a imagem de fundo */
+        .login-overlay {
+            background-color: rgba(255, 255, 255, 0.15);
+            /* Branco com 15% de opacidade (quase transparente) */
+            position: absolute; /* Posicionamento absoluto */
+            top: 0; left: 0; /* Posiciona no canto superior esquerdo */
+            width: 100%; /* Largura total */
+            height: 100%; /* Altura total */
+            z-index: 0; /* Camada inferior */
+        }
+        
+        /* Container principal do formulário */
+        .login-container {
+            width: 100%; /* Largura total */
+            max-width: 400px; /* Largura máxima */
+            background-color: #B7BFAF; /* Cor de fundo verde claro */
+            border-radius: 8px; /* Bordas arredondadas */
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.2); /* Sombra suave */
+            padding: 40px; /* Espaçamento interno */
+            position: relative; /* Para controle de z-index */
+            z-index: 1; /* Fica acima da overlay */
+        }
+        
+        /* Container da logo */
+        .logo-container {
+            text-align: center; /* Centraliza o conteúdo */
+            margin-bottom: -50px; /* Margem negativa para sobrepor elementos */
+        }
+        
+        /* Estilo da imagem da logo */
+        .logo-img {
+            max-width: 250px; /* Largura máxima da logo */
+            margin-bottom: 1px; /* Pequeno espaço abaixo da imagem */
+        }
+        
+        /* Título do formulário */
+        .login-title {
+            text-align: center; /* Texto centralizado */
+            margin-bottom: 30px; /* Espaço abaixo do título */
+            font-size: 20px; /* Tamanho da fonte */
+            color: #333; /* Cor do texto */
+            text-transform: uppercase; /* Texto em maiúsculas */
+            letter-spacing: 1px; /* Espaçamento entre letras */
+        }
+        
+        /* Estilo dos labels dos campos */
+        .form-label {
+            font-weight: 500; /* Peso da fonte */
+            color: #000000; /* Cor preta */
+            text-transform: uppercase; /* Texto em maiúsculas */
+            font-size: 15px; /* Tamanho da fonte */
+            letter-spacing: 0.5px; /* Espaçamento entre letras */
+        }
+        
+        /* Estilo dos campos de entrada */
+        .form-control {
+            border-radius: 4px; /* Bordas arredondadas */
+            padding: 12px 15px; /* Espaçamento interno */
+            margin-bottom: 20px; /* Espaço abaixo do campo */
+            border: 1px solid #ddd; /* Borda sutil */
+        }
+        
+        /* Container dos botões */
+        .btn-container {
+            display: flex; /* Ativa flexbox */
+            justify-content: space-between; /* Espaço entre botões */
+            margin-top: 30px; /* Espaço acima dos botões */
+        }
+        
+        /* Estilo do botão Sair */
+        .btn-sair {
+            background-color: #EB2207; /* Vermelho */
+            color: #ffffff; /* Texto branco */
+            border: none; /* Sem borda */
+            padding: 12px 25px; /* Espaçamento interno */
+            border-radius: 4px; /* Bordas arredondadas */
+            font-weight: 500; /* Peso da fonte */
+            text-transform: uppercase; /* Texto em maiúsculas */
+            letter-spacing: 0.5px; /* Espaçamento entre letras */
+            transition: all 0.3s ease; /* Transição suave para hover */
+            width: 48%; /* Largura do botão */
+        }
+        
+        /* Estilo do botão Entrar */
+        .btn-entrar {
+            background-color: #57D90C; /* Verde */
+            color: white; /* Texto branco */
+            border: none; /* Sem borda */
+            padding: 12px 25px; /* Espaçamento interno */
+            border-radius: 4px; /* Bordas arredondadas */
+            font-weight: 500; /* Peso da fonte */
+            text-transform: uppercase; /* Texto em maiúsculas */
+            letter-spacing: 0.5px; /* Espaçamento entre letras */
+            transition: all 0.3s ease; /* Transição suave para hover */
+            width: 48%; /* Largura do botão */
+        }
+        
+        /* Efeito hover para o botão Sair */
+        .btn-sair:hover {
+            background-color: #b11804; /* Vermelho mais escuro */
+            transform: translateY(-2px); /* Levanta levemente */
+        }
+        
+        /* Efeito hover para o botão Entrar */
+        .btn-entrar:hover {
+            background-color: #307b05; /* Verde mais escuro */
+            transform: translateY(-2px); /* Levanta levemente */
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay semi-transparente sobre a imagem de fundo -->
+    <div class="login-overlay"></div>
+    
+    <!-- Container principal do formulário -->
+    <div class="login-container">
+        <!-- Container da logo -->
+        <div class="logo-container">
+            <!-- Imagem da logo - deve ser substituída pelo caminho real -->
+            <img src="logo_hidrotec.png" alt="Hidro-Tec Logo" class="logo-img">
+            <!-- Texto da logo (vazio neste caso) -->
+            <h1 class="logo-text"></h1>
+        </div>
+        
+        <!-- Título do formulário -->
+        <div class="login-title">Acesso ao Sistema</div>
+        
+        <!-- Formulário de login -->
+        <form>
+            <!-- Campo de login -->
+            <div class="mb-3">
+                <label for="username" class="form-label">Login</label>
+                <input type="text" class="form-control" id="username" placeholder="Digite seu login">
+            </div>
+            
+            <!-- Campo de senha -->
+            <div class="mb-3">
+                <label for="password" class="form-label">Senha</label>
+                <input type="password" class="form-control" id="password" placeholder="Digite sua senha">
+            </div>
+            
+            <!-- Container dos botões -->
+            <div class="btn-container">
+                <!-- Botão Sair -->
+                <button type="button" class="btn btn-sair">Sair</button>
+                <!-- Botão Entrar -->
+                <button type="submit" class="btn btn-entrar">Entrar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Carrega o JavaScript do Bootstrap (incluindo Popper.js para componentes interativos) -->
+</body>
+</html>
