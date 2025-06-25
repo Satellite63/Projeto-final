@@ -1,24 +1,25 @@
-"""
-URL configuration for hidrotec project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-from hidrotec import views
 from django.contrib import admin
 from django.urls import path
+import hidrotec .views
+import usuario.views
+import rack.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',views.home),
+    path('',hidrotec.views.login, name='login'),
+    path('home/', hidrotec.views.home, name='home'),
+    path('autenticar/', usuario.views.login_view, name='autenticar'),
+    path('sair/', usuario.views.logout_view, name='sair'),
+    path('rack/', hidrotec.views.rack, name='rack'),
+    path('addhidro/', hidrotec.views.addhidro, name='addhidro'),
+    path('estoque/', hidrotec.views.estoque, name='estoque'),
+    path('monitoramento/', hidrotec.views.monitoramento, name='monitoramento'),
+    path('caixa/', hidrotec.views.caixa, name='caixa'),
+    path('home2/', hidrotec.views.retornaHome, name='home2'),
+    path('rack_form/', rack.views.formulario_rack, name='formularioRack'),
+    path('rack_form_edit/', rack.views.formulario_rack_edit, name='formularioRackEdit'),
+    path('rack_form_remove/', rack.views.formulario_rack_remove, name='formularioRackRemover'),
+    
+    
+
 ]

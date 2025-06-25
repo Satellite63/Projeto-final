@@ -1,3 +1,4 @@
+ {%load static%} 
  <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -248,13 +249,13 @@
                 <div class="user-area">
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
-                            <img src="user.png" alt="Avatar" class="user-avatar">
-                            <span class="user-name d-none d-sm-inline">Arthur Vicente</span>
+                            <img src="{% static 'img/user.png' %}" alt="Avatar" class="user-avatar">
+                            <span class="user-name d-none d-sm-inline">{{request.session.nome_usuario}}</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="telaprincipal.html"><i class="bi bi-boxes me-2"></i>HOME</a></li>
+                       <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="../home2"><i class="bi bi-boxes me-2"></i>HOME</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+                            <li><a class="dropdown-item" href="../sair"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
                         </ul>
                     </div>
                 </div>

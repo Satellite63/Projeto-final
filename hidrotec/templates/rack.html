@@ -1,4 +1,5 @@
- <!DOCTYPE html>
+{% load static %}
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -186,7 +187,7 @@
     <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
         <div class="container-fluid">
             <a class="navbar-brand" href="index.html">
-                <img src="logo_hidrotec.png" alt="Hidro-Tec Logo" class="img-fluid">
+                <img src="{% static 'img/logo_hidrotec.png' %}" alt="Hidro-Tec Logo" class="img-fluid">
             </a>
             
             <div class="farm-name d-none d-lg-block">
@@ -205,13 +206,13 @@
                 <div class="user-area">
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
-                            <img src="user.png" alt="Avatar" class="user-avatar">
-                            <span class="user-name d-none d-sm-inline">Arthur Vicente</span>
+                            <img src="{% static 'img/user.png' %}" alt="Avatar" class="user-avatar">
+                            <span class="user-name d-none d-sm-inline">{{request.session.nome_usuario}}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="telaprincipal.html"><i class="bi bi-boxes me-2"></i>HOME</a></li>
+                            <li><a class="dropdown-item" href="../home2"><i class="bi bi-boxes me-2"></i>HOME</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+                            <li><a class="dropdown-item" href="../sair"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
                         </ul>
                     </div>
                 </div>
@@ -240,11 +241,30 @@
 
     <!-- Lista de racks -->
     <div class="container racks-container">
-        <div id="displayCapacidade"></div>
+        <div id="displayCapacidade">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
         <h4 class="mb-4">Racks Cadastrados</h4>
         <div id="listaRacks">
-            <!-- Os racks serão inseridos aqui dinamicamente -->
-            <p class="text-muted">Nenhum rack cadastrado ainda.</p>
+            {% if racks %}
+                {% for rack in racks %}
+                    <div class="rack-item">
+                        <div>
+                            <strong>{{ rack.1 }}</strong>
+                            <span class="text-muted"> - Quantidade: {{ rack.2 }}</span>
+                        </div>
+                        <small class="text-muted">ID: {{ rack.0 }}</small>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">Nenhum rack cadastrado ainda.</p>
+            {% endif %}
         </div>
     </div>
 
@@ -257,20 +277,22 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body modal-form">
-                    <form id="formAdicionar">
+                    <form id="formAdicionar" action="{% url 'formularioRack' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="add">
                         <div class="form-group">
                             <label for="nomeRack">Nome do Rack:</label>
-                            <input type="text" id="nomeRack" required>
+                            <input type="text" name="nomeRack" id="nomeRack" required>
                         </div>
                         <div class="form-group">
                             <label for="quantidadeRack">Quantidade:</label>
-                            <input type="number" id="quantidadeRack" min="1" required>
+                            <input type="number" name="quantidadeRack" id="quantidadeRack" min="1" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success">Adicionar</button>
                         </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" onclick="adicionarRack()">Adicionar</button>
                 </div>
             </div>
         </div>
@@ -285,26 +307,31 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body modal-form">
-                    <form id="formEditar">
+                    <form id="formEditar" action="{% url 'formularioRackEdit' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="edit">
                         <div class="form-group">
                             <label for="rackEditar">Selecione o rack:</label>
-                            <select id="rackEditar" class="form-select" onchange="carregarDadosRack()" required>
+                            <select id="rackEditar" name="rack_id" class="form-select" required>
                                 <option value="">Selecione um rack...</option>
+                                {% for rack in racks %}
+                                    <option value="{{ rack.0 }}">{{ rack.1 }} (Quantidade: {{ rack.2 }})</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="novoNomeRack">Novo Nome:</label>
-                            <input type="text" id="novoNomeRack" required>
+                            <input type="text" name="novoNomeRack" id="novoNomeRack" required>
                         </div>
                         <div class="form-group">
                             <label for="novaQuantidadeRack">Nova Quantidade:</label>
-                            <input type="number" id="novaQuantidadeRack" min="1" required>
+                            <input type="number" name="novaQuantidadeRack" id="novaQuantidadeRack" min="1" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-warning text-white">Salvar Alterações</button>
                         </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-warning text-white" onclick="editarRack()">Salvar Alterações</button>
                 </div>
             </div>
         </div>
@@ -319,242 +346,32 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body modal-form">
-                    <form id="formRemover">
+                    <form id="formRemover" action="{% url 'formularioRackRemover' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete">
                         <div class="form-group">
                             <label for="rackRemover">Selecione o rack para remover:</label>
-                            <select id="rackRemover" class="form-select" required>
+                            <select id="rackRemover" name="rack_id" class="form-select" required>
                                 <option value="">Selecione um rack...</option>
+                                {% for rack in racks %}
+                                    <option value="{{ rack.0 }}">{{ rack.1 }} (Quantidade: {{ rack.2 }})</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="alert alert-warning mt-3">
                             <i class="bi bi-exclamation-triangle"></i> Esta ação não pode ser desfeita!
                         </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-danger">Confirmar Remoção</button>
+                        </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" onclick="removerRack()">Confirmar Remoção</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Inclusão do JavaScript -->
+    <!-- Inclusão do JavaScript do Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Array para armazenar os racks
-        let racks = [];
-
-        // Carrega racks do localStorage ao iniciar
-        function carregarRacksDoLocalStorage() {
-            const racksSalvos = localStorage.getItem('racks');
-            if (racksSalvos) {
-                racks = JSON.parse(racksSalvos);
-                atualizarSelectsRacks();
-                atualizarListaRacks();
-            }
-        }
-
-        // Função para salvar racks no localStorage
-        function salvarRacksNoLocalStorage() {
-            localStorage.setItem('racks', JSON.stringify(racks));
-        }
-
-        // Função para calcular a capacidade total
-        function calcularCapacidadeTotal() {
-            return racks.reduce((total, rack) => {
-                return total + parseInt(rack.quantidade);
-            }, 0);
-        }
-
-        // Função para atualizar o display de capacidade
-        function atualizarDisplayCapacidade() {
-            const capacidadeTotal = calcularCapacidadeTotal();
-            const displayElement = document.getElementById('displayCapacidade');
-            
-            displayElement.innerHTML = `
-                <div class="alert alert-info">
-                    Capacidade total dos racks: <strong>${capacidadeTotal}</strong> espaços disponíveis
-                </div>
-            `;
-        }
-        
-        // Função para atualizar a lista de racks nos selects
-        function atualizarSelectsRacks() {
-            const selectEditar = document.getElementById('rackEditar');
-            const selectRemover = document.getElementById('rackRemover');
-            
-            // Limpar selects
-            selectEditar.innerHTML = '<option value="">Selecione um rack...</option>';
-            selectRemover.innerHTML = '<option value="">Selecione um rack...</option>';
-            
-            // Adicionar racks aos selects
-            racks.forEach(rack => {
-                const option = document.createElement('option');
-                option.value = rack.id;
-                option.textContent = `${rack.nome} (Quantidade: ${rack.quantidade})`;
-                
-                selectEditar.appendChild(option.cloneNode(true));
-                selectRemover.appendChild(option.cloneNode(true));
-            });
-            
-            // Atualizar lista visual e display de capacidade
-            atualizarListaRacks();
-            atualizarDisplayCapacidade();
-        }
-        
-        // Função para atualizar a lista visual de racks
-        function atualizarListaRacks() {
-            const listaRacks = document.getElementById('listaRacks');
-            
-            if (racks.length === 0) {
-                listaRacks.innerHTML = '<p class="text-muted">Nenhum rack cadastrado ainda.</p>';
-                return;
-            }
-            
-            listaRacks.innerHTML = '';
-            
-            racks.forEach(rack => {
-                const rackElement = document.createElement('div');
-                rackElement.className = 'rack-item';
-                rackElement.innerHTML = `
-                    <div>
-                        <strong>${rack.nome}</strong>
-                        <span class="text-muted"> - Quantidade: ${rack.quantidade}</span>
-                    </div>
-                    <small class="text-muted">ID: ${rack.id}</small>
-                `;
-                listaRacks.appendChild(rackElement);
-            });
-        }
-        
-        // Função para adicionar rack
-        function adicionarRack() {
-            const nome = document.getElementById('nomeRack').value.trim();
-            const quantidade = document.getElementById('quantidadeRack').value;
-            
-            // Validação
-            if (!nome || !quantidade) {
-                alert('Por favor, preencha todos os campos!');
-                return;
-            }
-            
-            // Criar novo rack
-            const novoRack = {
-                id: Date.now(), // Usamos o timestamp como ID simples
-                nome: nome,
-                quantidade: quantidade
-            };
-            
-            // Adicionar ao array
-            racks.push(novoRack);
-            
-            // Atualizar selects e lista
-            atualizarSelectsRacks();
-            
-            // Salvar no localStorage
-            salvarRacksNoLocalStorage();
-            
-            // Fechar modal e limpar formulário
-            const modal = bootstrap.Modal.getInstance(document.getElementById('modalAdicionar'));
-            modal.hide();
-            document.getElementById('formAdicionar').reset();
-            
-            // Feedback
-            alert('Rack adicionado com sucesso!');
-        }
-        
-        // Função para carregar dados do rack selecionado para edição
-        function carregarDadosRack() {
-            const rackId = parseInt(document.getElementById('rackEditar').value);
-            if (!rackId) return;
-            
-            const rack = racks.find(r => r.id === rackId);
-            if (rack) {
-                document.getElementById('novoNomeRack').value = rack.nome;
-                document.getElementById('novaQuantidadeRack').value = rack.quantidade;
-            }
-        }
-        
-        // Função para editar rack
-        function editarRack() {
-            const rackId = parseInt(document.getElementById('rackEditar').value);
-            const novoNome = document.getElementById('novoNomeRack').value.trim();
-            const novaQuantidade = document.getElementById('novaQuantidadeRack').value;
-            
-            // Validação
-            if (!rackId || !novoNome || !novaQuantidade) {
-                alert('Por favor, preencha todos os campos!');
-                return;
-            }
-            
-            // Encontrar e atualizar o rack
-            const rackIndex = racks.findIndex(r => r.id === rackId);
-            if (rackIndex !== -1) {
-                racks[rackIndex].nome = novoNome;
-                racks[rackIndex].quantidade = novaQuantidade;
-            }
-            
-            // Atualizar selects e lista
-            atualizarSelectsRacks();
-            
-            // Salvar no localStorage
-            salvarRacksNoLocalStorage();
-            
-            // Fechar modal e limpar formulário
-            const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
-            modal.hide();
-            document.getElementById('formEditar').reset();
-            
-            // Feedback
-            alert('Rack atualizado com sucesso!');
-        }
-        
-        // Função para remover rack
-        function removerRack() {
-            const rackId = parseInt(document.getElementById('rackRemover').value);
-            
-            // Validação
-            if (!rackId) {
-                alert('Por favor, selecione um rack para remover!');
-                return;
-            }
-            
-            // Confirmação
-            if (!confirm('Tem certeza que deseja remover este rack permanentemente?')) {
-                return;
-            }
-            
-            // Remover o rack do array
-            racks = racks.filter(r => r.id !== rackId);
-            
-            // Atualizar selects e lista
-            atualizarSelectsRacks();
-            
-            // Salvar no localStorage
-            salvarRacksNoLocalStorage();
-            
-            // Fechar modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('modalRemover'));
-            modal.hide();
-            
-            // Feedback
-            alert('Rack removido com sucesso!');
-        }
-        
-        // Event listeners para carregar racks quando os modais são abertos
-        document.getElementById('modalEditar').addEventListener('show.bs.modal', function() {
-            atualizarSelectsRacks();
-        });
-        
-        document.getElementById('modalRemover').addEventListener('show.bs.modal', function() {
-            atualizarSelectsRacks();
-        });
-
-        // Carrega os racks ao iniciar a página
-        document.addEventListener('DOMContentLoaded', function() {
-            carregarRacksDoLocalStorage();
-        });
-    </script>
 </body>
 </html>

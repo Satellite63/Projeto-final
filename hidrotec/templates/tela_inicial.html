@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -177,7 +178,7 @@
         <div class="container-fluid">
             <!-- Logo no canto esquerdo -->
             <a class="navbar-brand" href="index.html">
-                <img src="logo_hidrotec.png" alt="Hidro-Tec Logo" class="img-fluid">
+                <img src="{% static 'img/logo_hidrotec.png' %}" alt="Hidro-Tec Logo" class="img-fluid">
             </a>
             
             <!-- Nome da fazenda no centro -->
@@ -200,11 +201,11 @@
                 <div class="user-area">
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
-                            <img src="user.png" alt="Avatar" class="user-avatar">
-                            <span class="user-name d-none d-sm-inline">Arthur Vicente</span>
+                            <img src="{% static 'img/user.png' %}" alt="Avatar" class="user-avatar">
+                            <span class="user-name d-none d-sm-inline">{{request.session.nome_usuario}}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+                            <li><a class="dropdown-item" href="../sair"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
                         </ul>
                     </div>
                 </div>
@@ -219,28 +220,28 @@
                     <!-- 5 botões centralizados com imagens -->
                     <div class="d-flex flex-wrap justify-content-center">
                         
-                        <button class="btn btn-with-icon btn-rack" onclick="window.location.href='rack.html'">
-                            <img src="hidroponico.png" alt="RACK">
+                        <button class="btn btn-with-icon btn-rack" onclick="window.location.href='../rack'">
+                            <img src="{% static 'img/hidroponico.png' %}" alt="RACK">
                             RACK
                         </button>
                         
-                        <button class="btn btn-with-icon btn-add-hidro" onclick="window.location.href='addhidro.html'">
-                            <img src="crescer-planta.png" alt="ADD HIDRO">
+                        <button class="btn btn-with-icon btn-add-hidro" onclick="window.location.href='../addhidro'">
+                            <img src="{% static 'img/crescer-planta.png' %}" alt="ADD HIDRO">
                             ADD HIDRO
                         </button>
                         
-                        <button class="btn btn-with-icon btn-estoque" onclick="window.location.href='estoque.html'">
-                            <img src="legumes.png" alt="ESTOQUE">
+                        <button class="btn btn-with-icon btn-estoque" onclick="window.location.href='../estoque'">
+                            <img src="{% static 'img/legumes.png' %}" alt="ESTOQUE">
                             ESTOQUE
                         </button>
                         
-                        <button class="btn btn-with-icon btn-monitorar" onclick="window.location.href='monitoramento.html'">
-                            <img src="monitoramento.png" alt="MONITORAR">
+                        <button class="btn btn-with-icon btn-monitorar" onclick="window.location.href='../monitoramento'">
+                            <img src="{% static 'img/monitoramento.png' %}" alt="MONITORAR">
                             MONITORAR
                         </button>
                         
-                        <button class="btn btn-with-icon btn-caixa" onclick="window.location.href='caixa.html'">
-                            <img src="arvore-de-dinheiro.png" alt="CAIXA">
+                        <button class="btn btn-with-icon btn-caixa" onclick="window.location.href='../caixa'">
+                            <img src="{% static 'img/arvore-de-dinheiro.png' %}" alt="CAIXA">
                             CAIXA
                         </button>
                     
