@@ -1,4 +1,4 @@
-{%load static%} 
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -68,12 +68,17 @@
         }
         
         .chart-container {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        height: 500px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
         
         .chart-title {
             color: #2c3e50;
@@ -164,7 +169,7 @@
     <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
         <div class="container-fluid">
             <a class="navbar-brand" href="index.html">
-                <img src="logo_hidrotec.png" alt="Hidro-Tec Logo" class="img-fluid">
+                <img src="{% static 'img/logo_hidrotec.png' %}" alt="Hidro-Tec Logo" class="img-fluid">
             </a>
             
             <div class="farm-name d-none d-lg-block">
@@ -199,208 +204,60 @@
 
     <!-- Conteúdo principal -->
     <div class="container py-4">
-        <!-- Filtro por data -->
         <div class="row mb-4">
-            <div class="col-12">
-                <div class="filtro-container">
-                    <label for="tipoFiltroData">Filtrar por:</label>
-                    <select id="tipoFiltroData" class="form-select" onchange="atualizarFiltroData()">
-                        <option value="entrada">Data de Entrada</option>
-                        <option value="validade">Data de Validade</option>
-                    </select>
-
-                    <select id="mesFiltro" class="form-select" onchange="filtrarPorMesAno()">
-                        <option value="">Todos meses</option>
-                        <option value="1">Janeiro</option>
-                        <option value="2">Fevereiro</option>
-                        <option value="3">Março</option>
-                        <option value="4">Abril</option>
-                        <option value="5">Maio</option>
-                        <option value="6">Junho</option>
-                        <option value="7">Julho</option>
-                        <option value="8">Agosto</option>
-                        <option value="9">Setembro</option>
-                        <option value="10">Outubro</option>
-                        <option value="11">Novembro</option>
-                        <option value="12">Dezembro</option>
-                    </select>
-
-                    <select id="anoFiltro" class="form-select" onchange="filtrarPorMesAno()">
-                        <option value="">Todos anos</option>
-                        <!-- Os anos serão preenchidos dinamicamente -->
-                    </select>
-                </div>
-            </div>
-        </div>
-        
-        <div class="row mb-4">
+       {% for saldo in dados %}
             <div class="col-md-6">
                 <div class="summary-card">
-                    <div class="summary-title">Total em Saldo</div>
-                    <div class="summary-value valor-saldo" id="totalSaldo">R$ 0,00</div>
+                    <div class="summary-title">Total em {{ saldo.1 }}</div>
+                    <div class="summary-value {% if saldo.0 < 0 %}text-danger{% else %}text-success{% endif %}">R$ {{ saldo.0|floatformat:2 }}</div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="summary-card">
-                    <div class="summary-title">Total em Prejuízo</div>
-                    <div class="summary-value valor-prejuizo" id="totalPrejuizo">R$ 0,00</div>
-                </div>
-            </div>
+        {% endfor %}
         </div>
         
         <div class="row">
             <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="chart-title">Proporção por Unidade</h3>
-                    <canvas id="tipoChart"></canvas>
+                    <canvas id="tipoChart" height="500"></canvas>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="chart-title">Proporção Saldo/Prejuízo(R$)</h3>
-                    <canvas id="proporcaoChart"></canvas>
+                    <canvas id="proporcaoChart" height="500"></canvas>
                 </div>
             </div>
         </div>
-        
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="chart-container">
-                    <h3 class="chart-title">Itens de Plantio Cadastrados</h3>
-                    <div id="listaPlantio" class="mt-3">
-                        <p class="text-muted">Nenhum item de plantio cadastrado ainda.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Inclusão do JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Variáveis para os gráficos
-        let tipoChart, proporcaoChart;
-        
-        // Função para formatar valor em reais
-        function formatarValor(valor) {
-            const valorAbsoluto = Math.abs(valor);
-            const sinal = valor < 0 ? '-' : '';
-            return sinal + 'R$ ' + valorAbsoluto.toFixed(2).replace('.', ',');
-        }
-        
-        // Função para formatar data no formato dd/mm/aaaa
-        function formatarData(dataString) {
-            if (!dataString) return 'Não informada';
-            const data = new Date(dataString);
-            return data.toLocaleDateString('pt-BR');
-        }
-        
-        // Função para carregar os anos disponíveis nos produtos de plantio
-        function carregarAnosDisponiveis() {
-            const anos = new Set();
-            const selectAno = document.getElementById('anoFiltro');
-            
-            // Limpa as opções, mantendo apenas "Todos anos"
-            selectAno.innerHTML = '<option value="">Todos anos</option>';
-            
-            const products = JSON.parse(localStorage.getItem('products')) || [];
-            const plantioProducts = products.filter(p => p.categoria === 'Plantio');
-            
-            // Coleta anos únicos das datas de entrada e validade
-            plantioProducts.forEach(product => {
-                if (product.dataEntrada) {
-                    const anoEntrada = new Date(product.dataEntrada).getFullYear();
-                    anos.add(anoEntrada);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Acessando os dados passados pelo Django
+            function formatarNumero(valor) {
+                if (typeof valor === 'string') {
+                    return parseFloat(valor.replace('.', ',')).toFixed(2);
                 }
-                if (product.dataValidade) {
-                    const anoValidade = new Date(product.dataValidade).getFullYear();
-                    anos.add(anoValidade);
-                }
-            });
-            
-            // Ordena os anos e adiciona ao select
-            const anosOrdenados = Array.from(anos).sort((a, b) => b - a);
-            anosOrdenados.forEach(ano => {
-                const option = document.createElement('option');
-                option.value = ano;
-                option.textContent = ano;
-                selectAno.appendChild(option);
-            });
-        }
-        
-        // Função para filtrar produtos por mês e ano
-        function filtrarPorMesAno() {
-            const tipoFiltro = document.getElementById('tipoFiltroData').value;
-            const mesSelecionado = document.getElementById('mesFiltro').value;
-            const anoSelecionado = document.getElementById('anoFiltro').value;
-            
-            const products = JSON.parse(localStorage.getItem('products')) || [];
-            let plantioProducts = products.filter(p => p.categoria === 'Plantio');
-            
-            // Aplica os filtros conforme selecionado
-            if (mesSelecionado || anoSelecionado) {
-                plantioProducts = plantioProducts.filter(product => {
-                    const data = tipoFiltro === 'entrada' ? product.dataEntrada : product.dataValidade;
-                    if (!data) return false;
-                    
-                    const dataObj = new Date(data);
-                    const mes = dataObj.getMonth() + 1; // getMonth() retorna 0-11
-                    const ano = dataObj.getFullYear();
-                    
-                    let passaFiltro = true;
-                    
-                    if (mesSelecionado && mes != mesSelecionado) {
-                        passaFiltro = false;
-                    }
-                    
-                    if (anoSelecionado && ano != anoSelecionado) {
-                        passaFiltro = false;
-                    }
-                    
-                    return passaFiltro;
-                });
+                return valor.toFixed(2);
             }
-            
-            // Calcular totais com os produtos filtrados
-            calcularTotaisEAtualizarGraficos(plantioProducts);
-        }
-        
-        // Função para atualizar o tipo de filtro (entrada/validade)
-        function atualizarFiltroData() {
-            filtrarPorMesAno();
-        }
-        
-        // Função para calcular totais de saldo e prejuízo com base nos produtos filtrados
-        function calcularTotaisEAtualizarGraficos(plantioProducts) {
-            let totalSaldo = 0;
-            let totalPrejuizo = 0;
-            let quantidadeSaldo = 0;
-            let quantidadePrejuizo = 0;
-            
-            plantioProducts.forEach(product => {
-                const valorTotal = parseFloat(product.valor) * parseInt(product.quantidade);
-                
-                if (product.tipo === 'saldo') {
-                    totalSaldo += valorTotal;
-                    quantidadeSaldo += parseInt(product.quantidade);
-                } else {
-                    totalPrejuizo += Math.abs(valorTotal);
-                    quantidadePrejuizo += parseInt(product.quantidade);
-                }
-            });
-            
-            // Atualizar totais
-            document.getElementById('totalSaldo').textContent = formatarValor(totalSaldo);
-            document.getElementById('totalPrejuizo').textContent = formatarValor(totalPrejuizo * -1);
-            
-            // Atualizar lista de itens
-            atualizarListaPlantio(plantioProducts);
-            
+            quantidade_saldo = {% if dadosjs.1.2 == "saldo" %}{{ dadosjs.1.1 }}{% else %}0{% endif %},  // Valores positivos (saldo)
+            quantidade_prejuizo = {% if dadosjs.0.2 == "prejuizo" %}{{ dadosjs.0.1 }}{% else %}0{% endif %},
+            total_saldo = {% if dadosjs.1.2 == "saldo" %}{{ dadosjs.1.0}}{% else %}0{% endif %},       // Valores positivos (saldo)
+            total_prejuizo = {% if dadosjs.0.2 == "prejuizo" %}{{ dadosjs.0.0}}{% else %}0{% endif %}
+
+            const dados = {
+                quantidade_saldo: quantidade_saldo,  // Valores positivos (saldo)
+                quantidade_prejuizo: quantidade_prejuizo,
+                total_saldo: formatarNumero(total_saldo),       // Valores positivos (saldo)
+                total_prejuizo:formatarNumero(total_prejuizo)
+            };
+            console.log(dados)
             // Dados para os gráficos
             const tipoData = {
                 labels: ['Saldo', 'Prejuízo'],
                 datasets: [{
-                    data: [quantidadeSaldo, quantidadePrejuizo],
+                    data: [dados.quantidade_saldo, dados.quantidade_prejuizo],
                     backgroundColor: ['#28a745', '#dc3545'],
                     borderWidth: 1
                 }]
@@ -409,121 +266,60 @@
             const proporcaoData = {
                 labels: ['Saldo', 'Prejuízo'],
                 datasets: [{
-                    data: [totalSaldo, totalPrejuizo],
+                    data: [dados.total_saldo, dados.total_prejuizo],
                     backgroundColor: ['#28a745', '#dc3545'],
                     borderWidth: 1
                 }]
             };
             
-            // Atualizar ou criar gráficos
-            if (tipoChart) {
-                tipoChart.data = tipoData;
-                tipoChart.update();
-            } else {
-                const tipoCtx = document.getElementById('tipoChart').getContext('2d');
-                tipoChart = new Chart(tipoCtx, {
-                    type: 'pie',
-                    data: tipoData,
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const label = context.label || '';
-                                        const value = context.raw || 0;
-                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percentage = Math.round((value / total) * 100);
-                                        return `${label}: ${value} (${percentage}%)`;
-                                    }
+            // Criar gráficos
+            const tipoCtx = document.getElementById('tipoChart').getContext('2d');
+            new Chart(tipoCtx, {
+                type: 'pie',
+                data: tipoData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
                                 }
                             }
                         }
                     }
-                });
-            }
-            
-            if (proporcaoChart) {
-                proporcaoChart.data = proporcaoData;
-                proporcaoChart.update();
-            } else {
-                const proporcaoCtx = document.getElementById('proporcaoChart').getContext('2d');
-                proporcaoChart = new Chart(proporcaoCtx, {
-                    type: 'pie',
-                    data: proporcaoData,
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const label = context.label || '';
-                                        const value = context.raw || 0;
-                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percentage = Math.round((value / total) * 100);
-                                        return `${label}: ${formatarValor(value)} (${percentage}%)`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-        
-        // Função para atualizar a lista de itens de plantio
-        function atualizarListaPlantio(products) {
-            const listaPlantio = document.getElementById('listaPlantio');
-            
-            if (!products || products.length === 0) {
-                listaPlantio.innerHTML = '<p class="text-muted">Nenhum item de plantio encontrado com os filtros selecionados.</p>';
-                return;
-            }
-            
-            listaPlantio.innerHTML = '';
-            
-            // Ordenar por data de entrada (mais recente primeiro)
-            products.sort((a, b) => new Date(b.dataEntrada) - new Date(a.dataEntrada));
-            
-            products.forEach(product => {
-                const productElement = document.createElement('div');
-                productElement.className = 'product-item mb-3 p-3 bg-light rounded';
-                
-                const valorClass = product.tipo === 'prejuizo' ? 'valor-prejuizo' : 'valor-saldo';
-                const valorTotal = parseFloat(product.valor) * parseInt(product.quantidade);
-                
-                productElement.innerHTML = `
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <strong>${product.nome}</strong>
-                            <span class="badge ${product.tipo === 'saldo' ? 'bg-success' : 'bg-danger'} ms-2">${product.tipo}</span>
-                            <div class="text-muted small">Quantidade: ${product.quantidade}</div>
-                            <div class="text-muted small">Entrada: ${formatarData(product.dataEntrada)}</div>
-                        </div>
-                        <div class="text-end">
-                            <div class="${valorClass}">${formatarValor(valorTotal)}</div>
-                            <div class="text-muted small">Unitário: ${formatarValor(product.valor)}</div>
-                            ${product.dataValidade ? `<div class="text-muted small">Validade: ${formatarData(product.dataValidade)}</div>` : ''}
-                        </div>
-                    </div>
-                `;
-                listaPlantio.appendChild(productElement);
+                }
             });
-        }
-        
-        // Carregar dados ao iniciar a página
-        document.addEventListener('DOMContentLoaded', function() {
-            carregarAnosDisponiveis();
-            filtrarPorMesAno();
             
-            // Atualizar a cada 5 segundos (opcional)
-            setInterval(filtrarPorMesAno, 5000);
+            const proporcaoCtx = document.getElementById('proporcaoChart').getContext('2d');
+            new Chart(proporcaoCtx, {
+                type: 'pie',
+                data: proporcaoData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: R$ ${value.toFixed(2)} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         });
     </script>
 </body>

@@ -1,5 +1,5 @@
-{%load static%} 
 <!DOCTYPE html>
+{% load static %}
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -241,7 +241,7 @@
     <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
         <div class="container-fluid">
             <a class="navbar-brand" href="index.html">
-                <img src="logo_hidrotec.png" alt="Hidro-Tec Logo" class="img-fluid">
+                <img src="{% static 'img/logo_hidrotec.png' %}" alt="Hidro-Tec Logo" class="img-fluid">
             </a>
             
             <div class="farm-name d-none d-lg-block">
@@ -256,8 +256,7 @@
                 <div class="farm-name d-lg-none text-center mb-3">
                     GERENCIAMENTO DE ESTOQUE
                 </div>
-                
-                <div class="user-area">
+               <div class="user-area">
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
                             <img src="{% static 'img/user.png' %}" alt="Avatar" class="user-avatar">
@@ -291,35 +290,6 @@
                         <i class="bi bi-trash"></i> REMOVER PRODUTO
                     </button>
                 </div>
-                
-                <div class="filtro-container">
-                    <label for="tipoFiltroData">Filtrar por:</label>
-                    <select id="tipoFiltroData" class="form-select" onchange="atualizarFiltroData()">
-                        <option value="entrada">Data de Entrada</option>
-                        <option value="validade">Data de Validade</option>
-                    </select>
-
-                    <select id="mesFiltro" class="form-select ms-2" onchange="filtrarPorMesAno()">
-                        <option value="">Todos meses</option>
-                        <option value="1">Janeiro</option>
-                        <option value="2">Fevereiro</option>
-                        <option value="3">Março</option>
-                        <option value="4">Abril</option>
-                        <option value="5">Maio</option>
-                        <option value="6">Junho</option>
-                        <option value="7">Julho</option>
-                        <option value="8">Agosto</option>
-                        <option value="9">Setembro</option>
-                        <option value="10">Outubro</option>
-                        <option value="11">Novembro</option>
-                        <option value="12">Dezembro</option>
-                    </select>
-
-                    <select id="anoFiltro" class="form-select ms-2" onchange="filtrarPorMesAno()">
-                        <option value="">Todos anos</option>
-                        <!-- Os anos serão preenchidos dinamicamente -->
-                    </select>
-                </div>
             </div>
         </div>
     </div>
@@ -329,8 +299,32 @@
         <div id="displayEstoque"></div>
         <h4 class="mb-4">Produtos Cadastrados</h4>
         <div id="listaProducts">
-            <!-- Os produtos serão inseridos aqui dinamicamente -->
-            <p class="text-muted">Nenhum produto cadastrado ainda.</p>
+            {% if estoques %}
+                    <h5 class="mt-3 mb-2 text-muted"></h5>
+                    {% for estoque in estoques%}
+                        <div class="product-item {% if estoques.colhida %}colhida{% endif %}">
+                            <div>
+                                <strong>{{ estoque.1 }}</strong>
+                                <span class="text-muted"> - Categoria: {{ estoque.2 }}</span>
+                               <span class="{% if estoque.4 < 0 %}valor-prejuizo{% else %}valor-real{% endif %}"> 
+                                - Valor: R$ {{ estoque.4|floatformat:2 }}</span>
+                                <br>
+                                <small class="text-muted">estoque: {{ estoque.3 }} | Entrada: {{ estoque.5|date:"d/m/Y" }}</small>
+                                {% if estoque.6 %}
+                                    <small class="text-muted"> | Validade: {{ estoque.6|date:"d/m/Y" }}</small>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <small class="text-muted">Fornecedor: {{ estoque.7 }}</small>
+                                <br>
+                                <small class="text-muted">Descrição: {{ estoque.8 }}</small>
+                            </div>
+                            <small class="text-muted">ID: {{ estoque.0 }}</small>
+                        </div>
+                    {% endfor %}
+            {% else %}
+                <p class="text-muted">Nenhum produto cadastrado ainda.</p>
+            {% endif %}
         </div>
     </div>
 
@@ -343,66 +337,62 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body modal-form">
-                    <form id="formAdicionar">
+                    <form id="formAdicionar" method="post" action="{% url 'formularioEstoque' %}">
+                        {% csrf_token %}
                         <div class="form-group">
                             <label for="nomeProduct">Nome do Produto:</label>
-                            <input type="text" id="nomeProduct" required>
+                            <input type="text" id="nomeProduct" name="nome_estoque" required>
                         </div>
                         <div class="form-group">
                             <label for="categoriaProduct">Categoria:</label>
-                            <select id="categoriaProduct" required>
+                            <select id="categoriaProduct" name="categoria" required>
                                 <option value="">Selecione uma categoria...</option>
-                                <option value="Hidroponia">Hidroponia</option>
-                                <option value="Fertilizantes">Fertilizantes</option>
-                                <option value="Sementes">Sementes</option>
-                                <option value="Equipamentos">Equipamentos</option>
                                 <option value="Plantio">Plantio</option>
-                                <option value="Outros">Outros</option>
                             </select>
                         </div>
                         <div class="form-group" id="tipoPlantioGroup" style="display: none;">
                             <label for="tipoPlantio">Tipo:</label>
-                            <select id="tipoPlantio">
+                            <select id="tipoPlantio" name="Tipo_despesa">
                                 <option value="saldo">Saldo</option>
                                 <option value="prejuizo">Prejuízo</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="quantidadeProduct">Quantidade em Estoque:</label>
-                            <input type="number" id="quantidadeProduct" min="0" required>
+                            <input type="number" id="quantidadeProduct" name="quantidade" min="" required>
                         </div>
                         <div class="form-group">
                             <label for="valorProduct">Valor Unitário (R$):</label>
-                            <input type="number" id="valorProduct" min="0" step="0.01" required>
+                            <input type="number" id="valorProduct" name="valor_estoque" min="" step="0.01" required>
                         </div>
                         <div class="form-group">
                             <label for="dataEntrada">Data de Entrada:</label>
-                            <input type="date" id="dataEntrada" required>
+                            <input type="date" id="dataEntrada" name="dt_entrada_estoque" required>
                         </div>
                         <div class="form-group">
                             <label for="dataValidade">Data de Validade (opcional):</label>
-                            <input type="date" id="dataValidade">
+                            <input type="date" id="dataValidade" name="dt_validade_estoque">
                         </div>
                         <div class="form-group">
                             <label for="fornecedorProduct">Fornecedor:</label>
-                            <input type="text" id="fornecedorProduct">
+                            <input type="text" id="fornecedorProduct" name="fornecedor">
                         </div>
                         <div class="form-group">
                             <label for="descricaoProduct">Descrição:</label>
-                            <textarea id="descricaoProduct" rows="3"></textarea>
+                            <textarea id="descricaoProduct" name="descricao" rows="3"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" onclick="adicionarProduct()">Adicionar</button>
+                    <button type="submit" form="formAdicionar" class="btn btn-success">Adicionar</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Editar -->
-    <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
+        <!-- Modal Editar -->
+        <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -410,65 +400,76 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body modal-form">
-                    <form id="formEditar">
+                    <form id="formEditar" method="post" action="{% url 'formularioEstoqueEdit' %}">
+                        {% csrf_token %}
+                        <input type="hidden" id="produtoId" name="produto_id">
                         <div class="form-group">
                             <label for="productEditar">Selecione o produto:</label>
-                            <select id="productEditar" class="form-select" onchange="carregarDadosProduct()" required>
+                            <select id="productEditar" class="form-select" name="estoque_id" required>
                                 <option value="">Selecione um produto...</option>
+                                {% for estoque in estoques %}
+                                    <option value="{{ estoque.0 }}" 
+                                        data-nome="{{ estoque.1 }}"
+                                        data-categoria="{{ estoque.2 }}"
+                                        data-quantidade="{{ estoque.3 }}"
+                                        data-valor="{{ estoque.4 }}"
+                                        data-entrada="{{ estoque.5|date:'Y-m-d' }}"
+                                        data-validade="{% if estoque.6 %}{{ estoque.6|date:'Y-m-d' }}{% endif %}"
+                                        data-fornecedor="{{ estoque.7 }}"
+                                        data-descricao="{{ estoque.8 }}"
+                                        data-tipo="{% if estoque.4 < 0 %}prejuizo{% else %}saldo{% endif %}">
+                                        {{ estoque.1 }} ({{ estoque.2 }}, Qtd: {{ estoque.3 }})
+                                    </option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="novoNomeProduct">Novo Nome:</label>
-                            <input type="text" id="novoNomeProduct" required>
+                            <label for="novoNomeProduct">Nome:</label>
+                            <input type="text" id="novoNomeProduct" name="novoNome_estoque" required>
                         </div>
                         <div class="form-group">
-                            <label for="novaCategoriaProduct">Nova Categoria:</label>
-                            <select id="novaCategoriaProduct" required>
+                            <label for="novaCategoriaProduct">Categoria:</label>
+                            <select id="novaCategoriaProduct" name="novaCategoria" required>
                                 <option value="">Selecione uma categoria...</option>
-                                <option value="Hidroponia">Hidroponia</option>
-                                <option value="Fertilizantes">Fertilizantes</option>
-                                <option value="Sementes">Sementes</option>
-                                <option value="Equipamentos">Equipamentos</option>
                                 <option value="Plantio">Plantio</option>
-                                <option value="Outros">Outros</option>
                             </select>
                         </div>
                         <div class="form-group" id="novoTipoPlantioGroup" style="display: none;">
-                            <label for="novoTipoPlantio">Novo Tipo:</label>
-                            <select id="novoTipoPlantio">
+                            <label for="novoTipoPlantio">Tipo:</label>
+                            <select id="novoTipoPlantio" name="novoTipo_despesa">
                                 <option value="saldo">Saldo</option>
                                 <option value="prejuizo">Prejuízo</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="novaQuantidadeProduct">Nova Quantidade:</label>
-                            <input type="number" id="novaQuantidadeProduct" min="0" required>
+                            <label for="novaQuantidadeProduct">Quantidade:</label>
+                            <input type="number" id="novaQuantidadeProduct" name="novaQuantidade_estoque" min="" required>
                         </div>
                         <div class="form-group">
-                            <label for="novoValorProduct">Novo Valor (R$):</label>
-                            <input type="number" id="novoValorProduct" min="0" step="0.01" required>
+                            <label for="novoValorProduct">Valor (R$):</label>
+                            <input type="number" id="novoValorProduct" name="novoValor_estoque" min="" step="0.01" required>
                         </div>
                         <div class="form-group">
-                            <label for="novaDataEntrada">Nova Data de Entrada:</label>
-                            <input type="date" id="novaDataEntrada" required>
+                            <label for="novaDataEntrada">Data de Entrada:</label>
+                            <input type="date" id="novaDataEntrada" name="novaDt_entrada_estoque" required>
                         </div>
                         <div class="form-group">
-                            <label for="novaDataValidade">Nova Data de Validade (opcional):</label>
-                            <input type="date" id="novaDataValidade">
+                            <label for="novaDataValidade">Data de Validade (opcional):</label>
+                            <input type="date" id="novaDataValidade" name="novaDt_validade_estoque">
                         </div>
                         <div class="form-group">
-                            <label for="novoFornecedorProduct">Novo Fornecedor:</label>
-                            <input type="text" id="novoFornecedorProduct">
+                            <label for="novoFornecedorProduct">Fornecedor:</label>
+                            <input type="text" id="novoFornecedorProduct" name="novoFornecedor">
                         </div>
                         <div class="form-group">
-                            <label for="novaDescricaoProduct">Nova Descrição:</label>
-                            <textarea id="novaDescricaoProduct" rows="3"></textarea>
+                            <label for="novaDescricaoProduct">Descrição:</label>
+                            <textarea id="novaDescricaoProduct" name="novaDescricao" rows="3"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-warning text-white" onclick="editarProduct()">Salvar Alterações</button>
+                    <button type="submit" form="formEditar" class="btn btn-warning text-white">Salvar Alterações</button>
                 </div>
             </div>
         </div>
@@ -483,11 +484,15 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body modal-form">
-                    <form id="formRemover">
+                    <form id="formRemover" method="post" action="{% url 'formularioEstoqueRemover' %}">
+                        {% csrf_token %}
                         <div class="form-group">
                             <label for="productRemover">Selecione o produto para remover:</label>
-                            <select id="productRemover" class="form-select" required>
+                            <select id="productRemover" class="form-select" name="estoque_id" required>
                                 <option value="">Selecione um produto...</option>
+                                {% for estoque in estoques %}
+                                    <option value="{{ estoque.0 }}">{{ estoque.1 }} ({{ estoque.2 }}, Qtd: {{ estoque.3 }})</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="alert alert-warning mt-3">
@@ -497,7 +502,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" onclick="removerProduct()">Confirmar Remoção</button>
+                    <button type="submit" form="formRemover" class="btn btn-danger">Confirmar Remoção</button>
                 </div>
             </div>
         </div>
@@ -506,460 +511,64 @@
     <!-- Inclusão do JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Array para armazenar os produtos
-        let products = [];
+document.addEventListener('DOMContentLoaded', function() {
+    // Quando a seleção de produto muda no modal de edição
+    document.getElementById('productEditar').addEventListener('change', function() {
+        var selectedOption = this.options[this.selectedIndex];
         
-        // Carrega produtos do localStorage ao iniciar
-        function carregarProductsDoLocalStorage() {
-            const productsSalvos = localStorage.getItem('products');
-            if (productsSalvos) {
-                products = JSON.parse(productsSalvos);
-                atualizarSelectsProducts();
-                atualizarListaProducts();
-                atualizarDisplayEstoque();
-                carregarAnosDisponiveis(); // Carrega os anos disponíveis para o filtro
+        // Preenche todos os campos com os dados do produto selecionado
+        if (selectedOption.value) {
+            document.getElementById('novoNomeProduct').value = selectedOption.getAttribute('data-nome');
+            document.getElementById('novaCategoriaProduct').value = selectedOption.getAttribute('data-categoria');
+            document.getElementById('novaQuantidadeProduct').value = selectedOption.getAttribute('data-quantidade');
+            document.getElementById('novoValorProduct').value = selectedOption.getAttribute('data-valor');
+            document.getElementById('novaDataEntrada').value = selectedOption.getAttribute('data-entrada');
+            document.getElementById('novaDataValidade').value = selectedOption.getAttribute('data-validade') || '';
+            document.getElementById('novoFornecedorProduct').value = selectedOption.getAttribute('data-fornecedor');
+            document.getElementById('novaDescricaoProduct').value = selectedOption.getAttribute('data-descricao');
+            
+            // Tratamento especial para o tipo (saldo/prejuízo)
+            var tipo = selectedOption.getAttribute('data-tipo');
+            if (tipo) {
+                document.getElementById('novoTipoPlantio').value = tipo;
             }
+            
+            // Mostra/oculta campos específicos baseado na categoria
+            toggleTipoPlantioField();
+        } else {
+            // Limpa os campos se nenhum produto for selecionado
+            clearEditFields();
         }
+    });
 
-        // Função para salvar produtos no localStorage
-        function salvarProductsNoLocalStorage() {
-            localStorage.setItem('products', JSON.stringify(products));
-        }
-        
-        // Função para formatar valor em reais
-        function formatarValor(valor) {
-            const valorAbsoluto = Math.abs(valor);
-            const sinal = valor < 0 ? '-' : '';
-            return sinal + 'R$ ' + valorAbsoluto.toFixed(2).replace('.', ',');
-        }
-        
-        // Função para calcular o valor total do estoque
-        function calcularValorTotalEstoque() {
-            return products.reduce((total, product) => {
-                return total + (parseFloat(product.valor) * parseInt(product.quantidade));
-             }, 0);
-        }
+    // Mostra/oculta campo de tipo quando a categoria muda
+    document.getElementById('novaCategoriaProduct').addEventListener('change', function() {
+        toggleTipoPlantioField();
+    });
 
-        // Função para calcular o valor total do estoque da categoria Plantio
-        function calcularValorTotalPlantio() {
-            return products.reduce((total, product) => {
-                if (product.categoria === 'Plantio') {
-                    return total + (parseFloat(product.valor) * parseInt(product.quantidade));
-                }
-                return total;
-            }, 0);
+    function toggleTipoPlantioField() {
+        var categoria = document.getElementById('novaCategoriaProduct').value;
+        var tipoPlantioGroup = document.getElementById('novoTipoPlantioGroup');
+        
+        if (categoria === 'Plantio') {
+            tipoPlantioGroup.style.display = 'block';
+        } else {
+            tipoPlantioGroup.style.display = 'none';
         }
+    }
 
-        // Função para calcular a quantidade total de itens no estoque
-        function calcularQuantidadeTotalEstoque() {
-            return products.reduce((total, product) => {
-                return total + parseInt(product.quantidade);
-            }, 0);
-        }
-        
-        // Função para contar produtos por categoria
-        function contarProdutosPorCategoria() {
-            const categorias = {};
-            
-            products.forEach(product => {
-                if (categorias[product.categoria]) {
-                    categorias[product.categoria]++;
-                } else {
-                    categorias[product.categoria] = 1;
-                }
-            });
-            
-            return categorias;
-        }
-        
-        // Função para atualizar o display de estoque
-        function atualizarDisplayEstoque() {
-            const quantidadeTotal = calcularQuantidadeTotalEstoque();
-            const valorTotal = calcularValorTotalEstoque();
-            const valorTotalPlantio = calcularValorTotalPlantio();
-            const categorias = contarProdutosPorCategoria();
-            
-            let categoriasHTML = '';
-            for (const [categoria, quantidade] of Object.entries(categorias)) {
-                categoriasHTML += `<span class="badge bg-secondary me-2">${categoria}: ${quantidade}</span>`;
-            }
-            
-            const displayElement = document.getElementById('displayEstoque');
-            
-            displayElement.innerHTML = `
-                <div class="alert alert-info">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <strong>Itens no estoque:</strong> ${quantidadeTotal} |
-                            <strong>Valor total:</strong> ${formatarValor(valorTotal)}
-                            ${valorTotalPlantio !== 0 ? `| <strong>Valor Plantio:</strong> ${formatarValor(valorTotalPlantio)}` : ''}
-                        </div>
-                        <div>
-                            ${categoriasHTML}
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Função para atualizar a lista de produtos nos selects
-        function atualizarSelectsProducts() {
-            const selectEditar = document.getElementById('productEditar');
-            const selectRemover = document.getElementById('productRemover');
-            
-            // Limpar selects
-            selectEditar.innerHTML = '<option value="">Selecione um produto...</option>';
-            selectRemover.innerHTML = '<option value="">Selecione um produto...</option>';
-            
-            // Adicionar produtos aos selects
-            products.forEach(product => {
-                const option = document.createElement('option');
-                option.value = product.id;
-                option.textContent = `${product.nome} (${product.categoria}, Qtd: ${product.quantidade})`;
-                
-                selectEditar.appendChild(option.cloneNode(true));
-                selectRemover.appendChild(option.cloneNode(true));
-            });
-            
-            // Atualizar lista visual e display de estoque
-            atualizarListaProducts();
-            atualizarDisplayEstoque();
-        }
-        
-        // Função para exibir produtos filtrados
-        function exibirProdutosFiltrados(produtosFiltrados) {
-            const listaProducts = document.getElementById('listaProducts');
-            
-            if (produtosFiltrados.length === 0) {
-                listaProducts.innerHTML = '<p class="text-muted">Nenhum produto encontrado com os critérios selecionados.</p>';
-                return;
-            }
-            
-            listaProducts.innerHTML = '';
-            
-            // Ordenar produtos por categoria e nome
-            const productsOrdenados = [...produtosFiltrados].sort((a, b) => {
-                if (a.categoria === b.categoria) {
-                    return a.nome.localeCompare(b.nome);
-                }
-                return a.categoria.localeCompare(b.categoria);
-            });
-            
-            let categoriaAtual = '';
-            
-            productsOrdenados.forEach(product => {
-                // Adicionar cabeçalho de categoria se mudou
-                if (product.categoria !== categoriaAtual) {
-                    categoriaAtual = product.categoria;
-                    const categoriaHeader = document.createElement('h5');
-                    categoriaHeader.className = 'mt-3 mb-2 text-muted';
-                    categoriaHeader.textContent = categoriaAtual;
-                    listaProducts.appendChild(categoriaHeader);
-                }
-                
-                const productElement = document.createElement('div');
-                productElement.className = 'product-item';
-                
-                // Determina a classe CSS com base na categoria
-                const categoriaClass = product.categoria === 'Plantio' ? 'product-category-plantio' : 'product-category';
-                
-                // Determina a classe CSS com base no tipo (para Plantio)
-                const valorClass = product.categoria === 'Plantio' && product.tipo === 'prejuizo' ? 'valor-prejuizo' : 'valor-real';
-                
-                productElement.innerHTML = `
-                    <div>
-                        <strong>${product.nome}</strong>
-                        <span class="${categoriaClass} ms-2">${product.categoria}</span>
-                        ${product.categoria === 'Plantio' ? `<small class="ms-2">(${product.tipo})</small>` : ''}
-                        <div class="text-muted small">${product.descricao || 'Sem descrição'}</div>
-                        <div>
-                            <span class="text-muted">Estoque: ${product.quantidade}</span>
-                            <span class="${valorClass} ms-2"> - Valor unitário: ${formatarValor(product.valor)}</span>
-                        </div>
-                        <div class="text-muted small">Fornecedor: ${product.fornecedor || 'Não informado'}</div>
-                        <div class="text-muted small">Entrada: ${formatarData(product.dataEntrada)} ${product.dataValidade ? `| Validade: ${formatarData(product.dataValidade)}` : ''}</div>
-                    </div>
-                    <small class="text-muted">ID: ${product.id}</small>
-                `;
-                listaProducts.appendChild(productElement);
-            });
-        }
-        
-        // Função para formatar data no formato dd/mm/aaaa
-        function formatarData(dataString) {
-            if (!dataString) return 'Não informada';
-            const data = new Date(dataString);
-            return data.toLocaleDateString('pt-BR');
-        }
-        
-        // Função para carregar os anos disponíveis nos produtos
-        function carregarAnosDisponiveis() {
-            const anos = new Set();
-            const selectAno = document.getElementById('anoFiltro');
-            
-            // Limpa as opções, mantendo apenas "Todos anos"
-            selectAno.innerHTML = '<option value="">Todos anos</option>';
-            
-            // Coleta anos únicos das datas de entrada e validade
-            products.forEach(product => {
-                if (product.dataEntrada) {
-                    const anoEntrada = new Date(product.dataEntrada).getFullYear();
-                    anos.add(anoEntrada);
-                }
-                if (product.dataValidade) {
-                    const anoValidade = new Date(product.dataValidade).getFullYear();
-                    anos.add(anoValidade);
-                }
-            });
-            
-            // Ordena os anos e adiciona ao select
-            const anosOrdenados = Array.from(anos).sort((a, b) => b - a);
-            anosOrdenados.forEach(ano => {
-                const option = document.createElement('option');
-                option.value = ano;
-                option.textContent = ano;
-                selectAno.appendChild(option);
-            });
-        }
-        
-        // Função para filtrar produtos por mês e ano
-        function filtrarPorMesAno() {
-            const tipoFiltro = document.getElementById('tipoFiltroData').value;
-            const mesSelecionado = document.getElementById('mesFiltro').value;
-            const anoSelecionado = document.getElementById('anoFiltro').value;
-            
-            let produtosFiltrados = products;
-            
-            // Aplica os filtros conforme selecionado
-            if (mesSelecionado || anoSelecionado) {
-                produtosFiltrados = products.filter(product => {
-                    const data = tipoFiltro === 'entrada' ? product.dataEntrada : product.dataValidade;
-                    if (!data) return false;
-                    
-                    const dataObj = new Date(data);
-                    const mes = dataObj.getMonth() + 1; // getMonth() retorna 0-11
-                    const ano = dataObj.getFullYear();
-                    
-                    let passaFiltro = true;
-                    
-                    if (mesSelecionado && mes != mesSelecionado) {
-                        passaFiltro = false;
-                    }
-                    
-                    if (anoSelecionado && ano != anoSelecionado) {
-                        passaFiltro = false;
-                    }
-                    
-                    return passaFiltro;
-                });
-            }
-            
-            exibirProdutosFiltrados(produtosFiltrados);
-        }
-        
-        // Função para atualizar o tipo de filtro (entrada/validade)
-        function atualizarFiltroData() {
-            filtrarPorMesAno();
-        }
-        
-        // Função para atualizar a lista visual de produtos
-        function atualizarListaProducts() {
-            filtrarPorMesAno(); // Aplica o filtro atual
-        }
-        
-        // Função para adicionar produto
-        function adicionarProduct() {
-            const nome = document.getElementById('nomeProduct').value.trim();
-            const categoria = document.getElementById('categoriaProduct').value;
-            const quantidade = parseInt(document.getElementById('quantidadeProduct').value);
-            const valor = parseFloat(document.getElementById('valorProduct').value);
-            const dataEntrada = document.getElementById('dataEntrada').value;
-            const dataValidade = document.getElementById('dataValidade').value;
-            const fornecedor = document.getElementById('fornecedorProduct').value.trim();
-            const descricao = document.getElementById('descricaoProduct').value.trim();
-            
-            // Validação básica
-            if (!nome || !categoria || isNaN(quantidade) || isNaN(valor) || !dataEntrada) {
-                alert('Por favor, preencha todos os campos obrigatórios!');
-                return;
-            }
-            
-            // Criar novo produto
-            const tipo = categoria === 'Plantio' ? document.getElementById('tipoPlantio').value : 'saldo';
-            const novoProduct = {
-                id: Date.now(), // Usamos o timestamp como ID simples
-                nome: nome,
-                categoria: categoria,
-                quantidade: quantidade,
-                valor: tipo === 'prejuizo' ? -Math.abs(valor) : Math.abs(valor),
-                dataEntrada: dataEntrada,
-                dataValidade: dataValidade || null,
-                fornecedor: fornecedor,
-                descricao: descricao,
-                tipo: tipo
-            };
-            
-            // Adicionar ao array
-            products.push(novoProduct);
-            
-            // Atualizar selects e lista
-            atualizarSelectsProducts();
-            carregarAnosDisponiveis(); // Atualiza os anos disponíveis
-            
-            // Salvar no localStorage
-            salvarProductsNoLocalStorage();
-            
-            // Fechar modal e limpar formulário
-            const modal = bootstrap.Modal.getInstance(document.getElementById('modalAdicionar'));
-            modal.hide();
-            document.getElementById('formAdicionar').reset();
-            
-            // Feedback
-            alert('Produto adicionado com sucesso!');
-        }
-        
-        // Função para carregar dados do produto selecionado para edição
-        function carregarDadosProduct() {
-            const productId = parseInt(document.getElementById('productEditar').value);
-            if (!productId) return;
-            
-            const product = products.find(p => p.id === productId);
-            if (product) {
-                document.getElementById('novoNomeProduct').value = product.nome;
-                document.getElementById('novaCategoriaProduct').value = product.categoria;
-                
-                // Mostrar/ocultar campo de tipo
-                const novoTipoPlantioGroup = document.getElementById('novoTipoPlantioGroup');
-                novoTipoPlantioGroup.style.display = product.categoria === 'Plantio' ? 'block' : 'none';
-                
-                if (product.categoria === 'Plantio') {
-                    document.getElementById('novoTipoPlantio').value = product.tipo;
-                }
-                
-                document.getElementById('novaQuantidadeProduct').value = product.quantidade;
-                document.getElementById('novoValorProduct').value = Math.abs(product.valor);
-                document.getElementById('novaDataEntrada').value = product.dataEntrada;
-                document.getElementById('novaDataValidade').value = product.dataValidade || '';
-                document.getElementById('novoFornecedorProduct').value = product.fornecedor || '';
-                document.getElementById('novaDescricaoProduct').value = product.descricao || '';
-            }
-        }
-        
-        // Função para editar produto
-        function editarProduct() {
-            const productId = parseInt(document.getElementById('productEditar').value);
-            const novoNome = document.getElementById('novoNomeProduct').value.trim();
-            const novaCategoria = document.getElementById('novaCategoriaProduct').value;
-            const novaQuantidade = parseInt(document.getElementById('novaQuantidadeProduct').value);
-            const novoValor = parseFloat(document.getElementById('novoValorProduct').value);
-            const novaDataEntrada = document.getElementById('novaDataEntrada').value;
-            const novaDataValidade = document.getElementById('novaDataValidade').value;
-            const novoFornecedor = document.getElementById('novoFornecedorProduct').value.trim();
-            const novaDescricao = document.getElementById('novaDescricaoProduct').value.trim();
-            
-            // Validação básica
-            if (!productId || !novoNome || !novaCategoria || isNaN(novaQuantidade) || isNaN(novoValor) || !novaDataEntrada) {
-                alert('Por favor, preencha todos os campos obrigatórios!');
-                return;
-            }
-            
-            // Encontra o produto atual
-            const productIndex = products.findIndex(p => p.id === productId);
-            if (productIndex === -1) return;
-            
-            // Determinar o tipo (para Plantio)
-            const novoTipo = novaCategoria === 'Plantio' ? document.getElementById('novoTipoPlantio').value : 'saldo';
-            const valorFinal = novaCategoria === 'Plantio' && novoTipo === 'prejuizo' ? -Math.abs(novoValor) : Math.abs(novoValor);
-            
-            // Atualizar o produto
-            products[productIndex].nome = novoNome;
-            products[productIndex].categoria = novaCategoria;
-            products[productIndex].quantidade = novaQuantidade;
-            products[productIndex].valor = valorFinal;
-            products[productIndex].dataEntrada = novaDataEntrada;
-            products[productIndex].dataValidade = novaDataValidade || null;
-            products[productIndex].fornecedor = novoFornecedor;
-            products[productIndex].descricao = novaDescricao;
-            products[productIndex].tipo = novoTipo;
-            
-            // Atualizar selects e lista
-            atualizarSelectsProducts();
-            carregarAnosDisponiveis(); // Atualiza os anos disponíveis
-            
-            // Salvar no localStorage
-            salvarProductsNoLocalStorage();
-            
-            // Fechar modal e limpar formulário
-            const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
-            modal.hide();
-            document.getElementById('formEditar').reset();
-            
-            // Feedback
-            alert('Produto atualizado com sucesso!');
-        }
-        
-        // Função para remover produto
-        function removerProduct() {
-            const productId = parseInt(document.getElementById('productRemover').value);
-            
-            // Validação
-            if (!productId) {
-                alert('Por favor, selecione um produto para remover!');
-                return;
-            }
-            
-            // Confirmação
-            if (!confirm('Tem certeza que deseja remover este produto permanentemente?')) {
-                return;
-            }
-            
-            // Remover o produto do array
-            products = products.filter(p => p.id !== productId);
-            
-            // Atualizar selects e lista
-            atualizarSelectsProducts();
-            carregarAnosDisponiveis(); // Atualiza os anos disponíveis
-            
-            // Salvar no localStorage
-            salvarProductsNoLocalStorage();
-            
-            // Fechar modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('modalRemover'));
-            modal.hide();
-            
-            // Feedback
-            alert('Produto removido com sucesso!');
-        }
-        
-        // Mostrar/ocultar campo de tipo quando a categoria é alterada
-        document.getElementById('categoriaProduct').addEventListener('change', function() {
-            const tipoPlantioGroup = document.getElementById('tipoPlantioGroup');
-            tipoPlantioGroup.style.display = this.value === 'Plantio' ? 'block' : 'none';
-        });
-        
-        document.getElementById('novaCategoriaProduct').addEventListener('change', function() {
-            const novoTipoPlantioGroup = document.getElementById('novoTipoPlantioGroup');
-            novoTipoPlantioGroup.style.display = this.value === 'Plantio' ? 'block' : 'none';
-        });
-
-        // Event listeners para carregar produtos quando os modais são abertos
-        document.getElementById('modalEditar').addEventListener('show.bs.modal', function() {
-            atualizarSelectsProducts();
-        });
-        
-        document.getElementById('modalRemover').addEventListener('show.bs.modal', function() {
-            atualizarSelectsProducts();
-        });
-
-        // Carrega os dados ao iniciar a página
-        document.addEventListener('DOMContentLoaded', function() {
-            carregarProductsDoLocalStorage();
-            
-            // Define a data de hoje como padrão para o campo de entrada
-            const hoje = new Date().toISOString().split('T')[0];
-            document.getElementById('dataEntrada').value = hoje;
-            document.getElementById('novaDataEntrada').value = hoje;
-        });
-    </script>
+    function clearEditFields() {
+        document.getElementById('novoNomeProduct').value = '';
+        document.getElementById('novaCategoriaProduct').value = '';
+        document.getElementById('novaQuantidadeProduct').value = '';
+        document.getElementById('novoValorProduct').value = '';
+        document.getElementById('novaDataEntrada').value = '';
+        document.getElementById('novaDataValidade').value = '';
+        document.getElementById('novoFornecedorProduct').value = '';
+        document.getElementById('novaDescricaoProduct').value = '';
+        document.getElementById('novoTipoPlantioGroup').style.display = 'none';
+    }
+});
+</script>
 </body>
 </html>

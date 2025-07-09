@@ -1,5 +1,5 @@
- {%load static%} 
- <!DOCTYPE html>
+{% load static %}
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -230,7 +230,7 @@
     <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
         <div class="container-fluid">
             <a class="navbar-brand" href="index.html">
-                <img src="logo_hidrotec.png" alt="Hidro-Tec Logo" class="img-fluid">
+                <img src="{% static 'img/logo_hidrotec.png' %}" alt="Hidro-Tec Logo" class="img-fluid">
             </a>
             
             <div class="farm-name d-none d-lg-block">
@@ -252,7 +252,7 @@
                             <img src="{% static 'img/user.png' %}" alt="Avatar" class="user-avatar">
                             <span class="user-name d-none d-sm-inline">{{request.session.nome_usuario}}</span>
                         </a>
-                       <ul class="dropdown-menu dropdown-menu-end">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="../home2"><i class="bi bi-boxes me-2"></i>HOME</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="../sair"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
@@ -280,50 +280,45 @@
                         <i class="bi bi-trash"></i> REMOVER PLANTA
                     </button>
                 </div>
-                
-                <div class="filtro-container">
-                    <label for="tipoFiltroData">Filtrar por:</label>
-                    <select id="tipoFiltroData" class="form-select" onchange="atualizarFiltroData()">
-                        <option value="plantio">Plantio</option>
-                        <option value="colheita">Colheita</option>
-                    </select>
-
-                    <select id="mesFiltro" class="form-select ms-2" onchange="filtrarPorMesAno()">
-                        <option value="">Todos meses</option>
-                        <option value="1">Janeiro</option>
-                        <option value="2">Fevereiro</option>
-                        <option value="3">Março</option>
-                        <option value="4">Abril</option>
-                        <option value="5">Maio</option>
-                        <option value="6">Junho</option>
-                        <option value="7">Julho</option>
-                        <option value="8">Agosto</option>
-                        <option value="9">Setembro</option>
-                        <option value="10">Outubro</option>
-                        <option value="11">Novembro</option>
-                        <option value="12">Dezembro</option>
-                    </select>
-
-                    <select id="anoFiltro" class="form-select ms-2" onchange="filtrarPorMesAno()">
-                        <option value="">Todos anos</option>
-                        <!-- Os anos serão preenchidos dinamicamente -->
-                    </select>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Lista de plantas -->
+        <!-- Lista de plantas -->
     <div class="container plants-container">
-        <div id="displayCapacidade"></div>
+        <div id="displayCapacidade">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
         <h4 class="mb-4">Plantas Cadastradas</h4>
         <div id="listaPlants">
-            <!-- As plantas serão inseridas aqui dinamicamente -->
-            <p class="text-muted">Nenhuma planta cadastrada ainda.</p>
+            {% if hidros %}
+                {% for hidro in hidros %}
+                    <div class="plant-item {% if hidro.colhida %}colhida{% endif %}">
+                        <div>
+                            <strong>{{ hidro.1 }}</strong>
+                            <span class="text-muted"> - Quantidade: {{ hidro.2 }}</span>
+                            <span class="valor-real"> - Valor: R$ {{ hidro.3|floatformat:2 }}</span>
+                            <br>
+                            <small class="text-muted">Plantio: {{ hidro.4|date:"d/m/Y" }} | Colheita: {{ hidro.5|date:"d/m/Y" }}</small>
+                            <br>
+                            <small class="text-muted">Rack: {{ rack.2 }}</small> 
+                        </div>
+                        <small class="text-muted">ID: {{ hidro.0 }}</small>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">Nenhuma planta cadastrada ainda.</p>
+            {% endif %}
         </div>
     </div>
-
-    <!-- Modal Adicionar -->
+        <!-- Modal Adicionar -->
     <div class="modal fade" id="modalAdicionar" tabindex="-1" aria-labelledby="modalAdicionarLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -332,38 +327,47 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body modal-form">
-                    <form id="formAdicionar">
+                    <form id="formAdicionar" action="{% url 'formularioHidro' %}" method="post">
+                        {% csrf_token %}
                         <div class="form-group">
                             <label for="nomePlant">Nome da Planta:</label>
-                            <input type="text" id="nomePlant" required>
+                            <input type="text" name="nomeHidro" id="nomePlant" required>
                         </div>
                         <div class="form-group">
                             <label for="quantidadePlant">Quantidade:</label>
-                            <input type="number" id="quantidadePlant" min="1" required>
+                            <input type="number" name="quantidadeHidro" id="quantidadePlant" min="1" required>
                         </div>
+                        <!--<div class="form-group">
+                            <label for="rackPlant">Rack:</label>
+                            <select name="rack_id" id="rackPlant" class="form-select" required>
+                                <option value="">Selecione um rack...</option>
+                                {% for rack in racks %}
+                                    <option value="{{ rack.0 }}">{{ rack.1 }} (Capacidade: {{ rack.2 }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>-->
                         <div class="form-group">
                             <label for="valorPlant">Valor (R$):</label>
-                            <input type="number" id="valorPlant" min="0" step="0.01" required>
+                            <input type="number" name="valor" id="valorPlant" min="0" step="0.01" required>
                         </div>
                         <div class="form-group">
                             <label for="dataPlantio">Data de Plantio:</label>
-                            <input type="date" id="dataPlantio" required>
+                            <input type="date" name="dt_plantio" id="dataPlantio" required>
                         </div>
                         <div class="form-group">
                             <label for="dataColheita">Data de Colheita:</label>
-                            <input type="date" id="dataColheita" required>
+                            <input type="date" name="dt_colheita" id="dataColheita" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success">Adicionar</button>
                         </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" onclick="adicionarPlant()">Adicionar</button>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Modal Editar -->
+        <!-- Modal Editar -->
     <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -372,43 +376,64 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body modal-form">
-                    <form id="formEditar">
+                    <form id="formEditar" action="{% url 'formularioHidroEdit' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="edit">
                         <div class="form-group">
                             <label for="plantEditar">Selecione a planta:</label>
-                            <select id="plantEditar" class="form-select" onchange="carregarDadosPlant()" required>
+                            <select id="plantEditar" name="addhidro_id" class="form-select" required>
                                 <option value="">Selecione uma planta...</option>
+                                {% for hidro in hidros %}
+                                    <option value="{{ hidro.0 }}" 
+                                        data-nome="{{ hidro.1 }}"
+                                        data-quantidade="{{ hidro.2 }}"
+                                        data-valor="{{ hidro.3 }}"
+                                        data-plantio="{{ hidro.4|date:'Y-m-d' }}"
+                                        data-colheita="{{ hidro.5|date:'Y-m-d' }}"
+                                        data-rack="{{ hidro.6 }}">
+                                        {{ hidro.1 }} (Quantidade: {{ hidro.2 }})
+                                    </option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="novoNomePlant">Novo Nome:</label>
-                            <input type="text" id="novoNomePlant" required>
+                            <label for="novoNomePlant">Nome:</label>
+                            <input type="text" name="novoNomeHidro" id="novoNomePlant" required>
                         </div>
                         <div class="form-group">
-                            <label for="novaQuantidadePlant">Nova Quantidade:</label>
-                            <input type="number" id="novaQuantidadePlant" min="1" required>
+                            <label for="novaQuantidadePlant">Quantidade:</label>
+                            <input type="number" name="novoQuantidadeHidro" id="novaQuantidadePlant" min="1" required>
+                        </div>
+                        <!--<div class="form-group">
+                            <label for="novoRackPlant">Rack:</label>
+                            <select name="novoRack_id" id="novoRackPlant" class="form-select" required>
+                                <option value="">Selecione um rack...</option>
+                                {% for rack in racks %}
+                                    <option value="{{ rack.0 }}">{{ rack.1 }} (Capacidade: {{ rack.2 }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>-->
+                        <div class="form-group">
+                            <label for="novoValorPlant">Valor (R$):</label>
+                            <input type="number" name="novoValor" id="novoValorPlant" min="0" step="0.01" required>
                         </div>
                         <div class="form-group">
-                            <label for="novoValorPlant">Novo Valor (R$):</label>
-                            <input type="number" id="novoValorPlant" min="0" step="0.01" required>
+                            <label for="novaDataPlantio">Data de Plantio:</label>
+                            <input type="date" name="novoDt_plantio" id="novaDataPlantio" required>
                         </div>
                         <div class="form-group">
-                            <label for="novaDataPlantio">Nova Data de Plantio:</label>
-                            <input type="date" id="novaDataPlantio" required>
+                            <label for="novaDataColheita">Data de Colheita:</label>
+                            <input type="date" name="novoDt_colheita" id="novaDataColheita" required>
                         </div>
-                        <div class="form-group">
-                            <label for="novaDataColheita">Nova Data de Colheita:</label>
-                            <input type="date" id="novaDataColheita" required>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-warning text-white">Salvar Alterações</button>
                         </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-warning text-white" onclick="editarPlant()">Salvar Alterações</button>
                 </div>
             </div>
         </div>
     </div>
-
     <!-- Modal Remover -->
     <div class="modal fade" id="modalRemover" tabindex="-1" aria-labelledby="modalRemoverLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -418,462 +443,64 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body modal-form">
-                    <form id="formRemover">
+                    <form id="formRemover" action="{% url 'formularioHidroRemover' %}" method="post">
+                        {% csrf_token %}
                         <div class="form-group">
                             <label for="plantRemover">Selecione a planta para remover:</label>
-                            <select id="plantRemover" class="form-select" required>
+                            <select id="plantRemover" name="addhidro_id" class="form-select" required>
                                 <option value="">Selecione uma planta...</option>
+                                {% for hidro in hidros %}
+                                    <option value="{{ hidro.0 }}"> {{ hidro.1 }}(Quant: {{ hidro.2 }}|Valor: R$ {{ hidro.3|floatformat:2 }} | 
+                                    Plantio: {{ hidro.4|date:"d/m/Y" }} | 
+                                    Colheita: {{ hidro.5|date:"d/m/Y" }})</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="alert alert-warning mt-3">
                             <i class="bi bi-exclamation-triangle"></i> Esta ação não pode ser desfeita!
                         </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-danger">Confirmar Remoção</button>
+                        </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" onclick="removerPlant()">Confirmar Remoção</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Inclusão do JavaScript -->
+    <!-- Inclusão do JavaScript do Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Array para armazenar as plantas
-        let plants = [];
-        
-        // Array para armazenar os racks
-        let racks = [];
-
-        // Carrega plantas do localStorage ao iniciar
-        function carregarPlantsDoLocalStorage() {
-            const plantsSalvos = localStorage.getItem('plants');
-            if (plantsSalvos) {
-                plants = JSON.parse(plantsSalvos);
-                atualizarSelectsPlants();
-                atualizarListaPlants();
-                carregarAnosDisponiveis(); // Carrega os anos disponíveis para o filtro
-            }
-        }
-
-        // Carrega racks do localStorage
-        function carregarRacksDoLocalStorage() {
-            const racksSalvos = localStorage.getItem('racks');
-            if (racksSalvos) {
-                racks = JSON.parse(racksSalvos);
-                atualizarDisplayCapacidade();
-            }
-        }
-
-        // Função para salvar plantas no localStorage
-        function salvarPlantsNoLocalStorage() {
-            localStorage.setItem('plants', JSON.stringify(plants));
-        }
-        
-        // Função para formatar valor em reais
-        function formatarValor(valor) {
-            return 'R$ ' + parseFloat(valor).toFixed(2).replace('.', ',');
-        }
-        
-        // Função para formatar data no formato dd/mm/aaaa
-        function formatarData(dataString) {
-            if (!dataString) return 'Não informada';
-            const data = new Date(dataString);
-            return data.toLocaleDateString('pt-BR');
-        }
-        
-        // Função para verificar se a colheita já ocorreu
-        function verificarColheita(dataColheita) {
-            if (!dataColheita) return false;
-            const hoje = new Date();
-            const colheita = new Date(dataColheita);
-            return hoje >= colheita;
-        }
-        
-        // Função para calcular a capacidade total dos racks
-        function calcularCapacidadeTotal() {
-            return racks.reduce((total, rack) => {
-                return total + parseInt(rack.quantidade);
-            }, 0);
-        }
-        
-        // Função para calcular a quantidade total de plantas (não conta as colhidas)
-        function calcularQuantidadePlantas() {
-            return plants.reduce((total, plant) => {
-                if (!verificarColheita(plant.dataColheita)) {
-                    return total + parseInt(plant.quantidade);
-                }
-                return total;
-            }, 0);
-        }
-
-        // Função para atualizar o display de capacidade
-        function atualizarDisplayCapacidade() {
-            const capacidadeTotal = calcularCapacidadeTotal();
-            const plantasAtuais = calcularQuantidadePlantas();
-            const capacidadeDisponivel = capacidadeTotal - plantasAtuais;
-            
-            const displayElement = document.getElementById('displayCapacidade');
-            
-            displayElement.innerHTML = `
-                <div class="alert alert-info">
-                    Capacidade total dos racks: <strong>${capacidadeTotal}</strong> | 
-                    Plantas cadastradas: <strong>${plantasAtuais}</strong> | 
-                    Espaço disponível: <strong>${capacidadeDisponivel}</strong>
-                </div>
-            `;
-        }
-        
-        // Função para atualizar a lista de plantas nos selects
-        function atualizarSelectsPlants() {
-            const selectEditar = document.getElementById('plantEditar');
-            const selectRemover = document.getElementById('plantRemover');
-            
-            // Limpar selects
-            selectEditar.innerHTML = '<option value="">Selecione uma planta...</option>';
-            selectRemover.innerHTML = '<option value="">Selecione uma planta...</option>';
-            
-            // Adicionar plantas aos selects
-            plants.forEach(plant => {
-                const option = document.createElement('option');
-                option.value = plant.id;
-                option.textContent = `${plant.nome} (Quantidade: ${plant.quantidade})`;
-                
-                selectEditar.appendChild(option.cloneNode(true));
-                selectRemover.appendChild(option.cloneNode(true));
-            });
-            
-            // Atualizar lista visual e display de capacidade
-            atualizarListaPlants();
-            atualizarDisplayCapacidade();
-        }
-        
-        // Função para exibir plantas filtradas
-        function exibirPlantasFiltradas(plantasFiltradas) {
-            const listaPlants = document.getElementById('listaPlants');
-            
-            if (plantasFiltradas.length === 0) {
-                listaPlants.innerHTML = '<p class="text-muted">Nenhuma planta encontrada com os critérios selecionados.</p>';
-                return;
-            }
-            
-            listaPlants.innerHTML = '';
-            
-            plantasFiltradas.forEach(plant => {
-                const plantElement = document.createElement('div');
-                plantElement.className = 'plant-item';
-                
-                // Verifica se a colheita já ocorreu
-                const colhida = verificarColheita(plant.dataColheita);
-                if (colhida) {
-                    plantElement.classList.add('colhida');
-                }
-                
-                plantElement.innerHTML = `
-                    <div>
-                        <strong>${plant.nome}</strong>
-                        <span class="text-muted"> - Quantidade: ${plant.quantidade}</span>
-                        <span class="valor-real"> - Valor: ${formatarValor(plant.valor)}</span>
-                        <br>
-                        <small class="text-muted">Plantio: ${formatarData(plant.dataPlantio)} | Colheita: ${formatarData(plant.dataColheita)}</small>
-                    </div>
-                    <small class="text-muted">ID: ${plant.id}</small>
-                `;
-                listaPlants.appendChild(plantElement);
-            });
-        }
-        
-        // Função para carregar os anos disponíveis nas plantas
-        function carregarAnosDisponiveis() {
-            const anos = new Set();
-            const selectAno = document.getElementById('anoFiltro');
-            
-            // Limpa as opções, mantendo apenas "Todos anos"
-            selectAno.innerHTML = '<option value="">Todos anos</option>';
-            
-            // Coleta anos únicos das datas de plantio e colheita
-            plants.forEach(plant => {
-                if (plant.dataPlantio) {
-                    const anoPlantio = new Date(plant.dataPlantio).getFullYear();
-                    anos.add(anoPlantio);
-                }
-                if (plant.dataColheita) {
-                    const anoColheita = new Date(plant.dataColheita).getFullYear();
-                    anos.add(anoColheita);
-                }
-            });
-            
-            // Ordena os anos e adiciona ao select
-            const anosOrdenados = Array.from(anos).sort((a, b) => b - a);
-            anosOrdenados.forEach(ano => {
-                const option = document.createElement('option');
-                option.value = ano;
-                option.textContent = ano;
-                selectAno.appendChild(option);
-            });
-        }
-        
-        // Função para filtrar plantas por mês e ano
-        function filtrarPorMesAno() {
-            const tipoFiltro = document.getElementById('tipoFiltroData').value;
-            const mesSelecionado = document.getElementById('mesFiltro').value;
-            const anoSelecionado = document.getElementById('anoFiltro').value;
-            
-            let plantasFiltradas = plants;
-            
-            // Aplica os filtros conforme selecionado
-            if (mesSelecionado || anoSelecionado) {
-                plantasFiltradas = plants.filter(plant => {
-                    const data = tipoFiltro === 'plantio' ? plant.dataPlantio : plant.dataColheita;
-                    if (!data) return false;
-                    
-                    const dataObj = new Date(data);
-                    const mes = dataObj.getMonth() + 1; // getMonth() retorna 0-11
-                    const ano = dataObj.getFullYear();
-                    
-                    let passaFiltro = true;
-                    
-                    if (mesSelecionado && mes != mesSelecionado) {
-                        passaFiltro = false;
-                    }
-                    
-                    if (anoSelecionado && ano != anoSelecionado) {
-                        passaFiltro = false;
-                    }
-                    
-                    return passaFiltro;
-                });
-            }
-            
-            exibirPlantasFiltradas(plantasFiltradas);
-        }
-        
-        // Função para atualizar o tipo de filtro (plantio/colheita)
-        function atualizarFiltroData() {
-            filtrarPorMesAno();
-        }
-        
-        // Função para atualizar a lista visual de plantas
-        function atualizarListaPlants() {
-            filtrarPorMesAno(); // Aplica o filtro atual
-        }
-        
-        // Função para adicionar planta
-        function adicionarPlant() {
-            const nome = document.getElementById('nomePlant').value.trim();
-            const quantidade = parseInt(document.getElementById('quantidadePlant').value);
-            const valor = document.getElementById('valorPlant').value;
-            const dataPlantio = document.getElementById('dataPlantio').value;
-            const dataColheita = document.getElementById('dataColheita').value;
-            
-            // Carrega racks atualizados
-            carregarRacksDoLocalStorage();
-            
-            // Validação básica
-            if (!nome || !quantidade || !valor || !dataPlantio || !dataColheita) {
-                alert('Por favor, preencha todos os campos!');
-                return;
-            }
-            
-            // Validação de datas
-            if (new Date(dataColheita) < new Date(dataPlantio)) {
-                alert('A data de colheita não pode ser anterior à data de plantio!');
-                return;
-            }
-            
-            // Validação de capacidade
-            const capacidadeTotal = calcularCapacidadeTotal();
-            const plantasAtuais = calcularQuantidadePlantas();
-            const novaQuantidadeTotal = plantasAtuais + quantidade;
-            
-            if (racks.length === 0) {
-                alert('Nenhum rack cadastrado! Por favor, cadastre racks antes de adicionar plantas.');
-                return;
-            }
-            
-            if (novaQuantidadeTotal > capacidadeTotal) {
-                alert(`Capacidade insuficiente! Você tem ${capacidadeTotal} espaços disponíveis nos racks e já está utilizando ${plantasAtuais}. Não é possível adicionar mais ${quantidade} plantas.`);
-                return;
-            }
-            
-            // Criar nova planta
-            const novaPlant = {
-                id: Date.now(), // Usamos o timestamp como ID simples
-                nome: nome,
-                quantidade: quantidade,
-                valor: valor,
-                dataPlantio: dataPlantio,
-                dataColheita: dataColheita
-            };
-            
-            // Adicionar ao array
-            plants.push(novaPlant);
-            
-            // Atualizar selects e lista
-            atualizarSelectsPlants();
-            carregarAnosDisponiveis(); // Atualiza os anos disponíveis
-            
-            // Salvar no localStorage
-            salvarPlantsNoLocalStorage();
-            
-            // Fechar modal e limpar formulário
-            const modal = bootstrap.Modal.getInstance(document.getElementById('modalAdicionar'));
-            modal.hide();
-            document.getElementById('formAdicionar').reset();
-            
-            // Feedback
-            alert('Planta adicionada com sucesso!');
-        }
-        
-        // Função para carregar dados da planta selecionada para edição
-        function carregarDadosPlant() {
-            const plantId = parseInt(document.getElementById('plantEditar').value);
-            if (!plantId) return;
-            
-            const plant = plants.find(p => p.id === plantId);
-            if (plant) {
-                document.getElementById('novoNomePlant').value = plant.nome;
-                document.getElementById('novaQuantidadePlant').value = plant.quantidade;
-                document.getElementById('novoValorPlant').value = plant.valor;
-                document.getElementById('novaDataPlantio').value = plant.dataPlantio;
-                document.getElementById('novaDataColheita').value = plant.dataColheita;
-            }
-        }
-        
-        // Função para editar planta
-        function editarPlant() {
-            const plantId = parseInt(document.getElementById('plantEditar').value);
-            const novoNome = document.getElementById('novoNomePlant').value.trim();
-            const novaQuantidade = parseInt(document.getElementById('novaQuantidadePlant').value);
-            const novoValor = document.getElementById('novoValorPlant').value;
-            const novaDataPlantio = document.getElementById('novaDataPlantio').value;
-            const novaDataColheita = document.getElementById('novaDataColheita').value;
-            
-            // Carrega racks atualizados
-            carregarRacksDoLocalStorage();
-            
-            // Validação básica
-            if (!plantId || !novoNome || !novaQuantidade || !novoValor || !novaDataPlantio || !novaDataColheita) {
-                alert('Por favor, preencha todos os campos!');
-                return;
-            }
-            
-            // Validação de datas
-            if (new Date(novaDataColheita) < new Date(novaDataPlantio)) {
-                alert('A data de colheita não pode ser anterior à data de plantio!');
-                return;
-            }
-            
-            // Encontra a planta atual para calcular a diferença
-            const plantIndex = plants.findIndex(p => p.id === plantId);
-            if (plantIndex === -1) return;
-            
-            const quantidadeAtual = parseInt(plants[plantIndex].quantidade);
-            const diferencaQuantidade = novaQuantidade - quantidadeAtual;
-            
-            // Validação de capacidade apenas se estiver aumentando a quantidade
-            if (diferencaQuantidade > 0) {
-                const capacidadeTotal = calcularCapacidadeTotal();
-                const plantasAtuais = calcularQuantidadePlantas();
-                const novaQuantidadeTotal = plantasAtuais + diferencaQuantidade;
-                
-                if (novaQuantidadeTotal > capacidadeTotal) {
-                    alert(`Capacidade insuficiente! Você tem ${capacidadeTotal} espaços disponíveis nos racks e já está utilizando ${plantasAtuais}. Não é possível adicionar mais ${diferencaQuantidade} plantas.`);
-                    return;
-                }
-            }
-            
-            // Atualizar a planta
-            plants[plantIndex].nome = novoNome;
-            plants[plantIndex].quantidade = novaQuantidade;
-            plants[plantIndex].valor = novoValor;
-            plants[plantIndex].dataPlantio = novaDataPlantio;
-            plants[plantIndex].dataColheita = novaDataColheita;
-            
-            // Atualizar selects e lista
-            atualizarSelectsPlants();
-            carregarAnosDisponiveis(); // Atualiza os anos disponíveis
-            
-            // Salvar no localStorage
-            salvarPlantsNoLocalStorage();
-            
-            // Fechar modal e limpar formulário
-            const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
-            modal.hide();
-            document.getElementById('formEditar').reset();
-            
-            // Feedback
-            alert('Planta atualizada com sucesso!');
-        }
-        
-        // Função para remover planta
-        function removerPlant() {
-            const plantId = parseInt(document.getElementById('plantRemover').value);
-            
-            // Validação
-            if (!plantId) {
-                alert('Por favor, selecione uma planta para remover!');
-                return;
-            }
-            
-            // Confirmação
-            if (!confirm('Tem certeza que deseja remover esta planta permanentemente?')) {
-                return;
-            }
-            
-            // Remover a planta do array
-            plants = plants.filter(p => p.id !== plantId);
-            
-            // Atualizar selects e lista
-            atualizarSelectsPlants();
-            carregarAnosDisponiveis(); // Atualiza os anos disponíveis
-            
-            // Salvar no localStorage
-            salvarPlantsNoLocalStorage();
-            
-            // Fechar modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('modalRemover'));
-            modal.hide();
-            
-            // Feedback
-            alert('Planta removida com sucesso!');
-        }
-        
-        // Event listeners para carregar plantas quando os modais são abertos
-        document.getElementById('modalEditar').addEventListener('show.bs.modal', function() {
-            atualizarSelectsPlants();
-        });
-        
-        document.getElementById('modalRemover').addEventListener('show.bs.modal', function() {
-            atualizarSelectsPlants();
-        });
-
-        // Carrega os dados ao iniciar a página
-        document.addEventListener('DOMContentLoaded', function() {
-            carregarPlantsDoLocalStorage();
-            carregarRacksDoLocalStorage();
-            
-            // Define a data de hoje como padrão para os campos de data
-            const hoje = new Date().toISOString().split('T')[0];
-            document.getElementById('dataPlantio').value = hoje;
-            
-            // Define a data de colheita padrão como 30 dias após o plantio
-            const dataColheitaPadrao = new Date();
-            dataColheitaPadrao.setDate(dataColheitaPadrao.getDate() + 30);
-            document.getElementById('dataColheita').value = dataColheitaPadrao.toISOString().split('T')[0];
-        });
-        // Adicione isso em um arquivo JS compartilhado ou em cada página
 document.addEventListener('DOMContentLoaded', function() {
-    // Verifica se há um elemento de erro de autenticação
-    const authError = document.querySelector('.auth-error');
-    
-    if (authError) {
-        // Redireciona para login se não autenticado
-        window.location.href = '/login/?next=' + encodeURIComponent(window.location.pathname);
-    }
+    // Quando a seleção de planta muda no modal de edição
+    document.getElementById('plantEditar').addEventListener('change', function() {
+        var selectedOption = this.options[this.selectedIndex];
+        
+        // Preenche todos os campos com os dados da planta selecionada
+        if (selectedOption.value) {
+            document.getElementById('novoNomePlant').value = selectedOption.getAttribute('data-nome');
+            document.getElementById('novaQuantidadePlant').value = selectedOption.getAttribute('data-quantidade');
+            document.getElementById('novoValorPlant').value = selectedOption.getAttribute('data-valor');
+            document.getElementById('novaDataPlantio').value = selectedOption.getAttribute('data-plantio');
+            document.getElementById('novaDataColheita').value = selectedOption.getAttribute('data-colheita');
+            
+            // Seleciona o rack correto
+            var rackId = selectedOption.getAttribute('data-rack');
+            if (rackId) {
+                document.getElementById('novoRackPlant').value = rackId;
+            }
+        } else {
+            // Limpa os campos se nenhuma planta for selecionada
+            document.getElementById('novoNomePlant').value = '';
+            document.getElementById('novaQuantidadePlant').value = '';
+            document.getElementById('novoValorPlant').value = '';
+            document.getElementById('novaDataPlantio').value = '';
+            document.getElementById('novaDataColheita').value = '';
+            document.getElementById('novoRackPlant').value = '';
+        }
+    });
 });
-    </script>
+</script>
 </body>
 </html>

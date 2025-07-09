@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'usuario',
     'rack',
+    'addhidro',
+    'estoque',
+    'monitoramento',
     # Suas apps aqui
 ]
 

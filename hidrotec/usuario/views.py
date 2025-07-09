@@ -39,7 +39,7 @@ def login_view(request):
             request.session.set_expiry(3600)
             return redirect('home')
         
-        messages.error(request, "Usuário ou senha incorreto!")
+        messages.error(request, "Usuário ou senha incorretos!")
     
     return redirect('login')
 

@@ -3,6 +3,9 @@ from django.urls import path
 import hidrotec .views
 import usuario.views
 import rack.views
+import addhidro.views
+import estoque.views
+import monitoramento.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -19,7 +22,14 @@ urlpatterns = [
     path('rack_form/', rack.views.formulario_rack, name='formularioRack'),
     path('rack_form_edit/', rack.views.formulario_rack_edit, name='formularioRackEdit'),
     path('rack_form_remove/', rack.views.formulario_rack_remove, name='formularioRackRemover'),
-    
+    path('hidro_form/', addhidro.views.formulario_hidro, name='formularioHidro'),
+    path('hidro_form_edit/', addhidro.views.formulario_hidro_edit, name='formularioHidroEdit'),
+    path('hidro_form_remove/', addhidro.views.formulario_hidro_remove, name='formularioHidroRemover'),
+    path('estoque_form/', estoque.views.formulario_estoque, name='formularioEstoque'),
+    path('estoque_form_edit/', estoque.views.formulario_estoque_edit, name='formularioEstoqueEdit'),
+    path('estoque_form_remove/', estoque.views.formulario_estoque_remove, name='formularioEstoqueRemover'),
+    path('dashboard-estoque/', monitoramento.views.dashboard_estoque, name='dashboard_estoque'),
+ 
     
 
 ]

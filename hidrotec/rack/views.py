@@ -53,7 +53,7 @@ def remover_rack(id):
         return True  # Retorna True indicando sucesso
         
     except Exception as e:
-        print(f"Erro ao remover rack: {str(e)}")  # Mensagem corrigida de "inserir" para "remover"
+        print(f"Erro ao remover rack: {str(e)}")  
         return None
 
 # View para processar o formulário de criação de rack
@@ -109,7 +109,7 @@ def formulario_rack_edit(request):
                 messages.success(request, "Rack atualizado com sucesso!")
                 return redirect('../rack/')
             else:
-                messages.error(request, "Erro ao atualizar rack")
+                messages.error(request, "")
                 
         except ValueError as e:
             messages.error(request, f"Quantidade deve ser um número válido: {str(e)}")
@@ -129,10 +129,7 @@ def formulario_rack_remove(request):
         # Chama função para remover rack
         sucesso = remover_rack(id)
         
-        if sucesso:
-            messages.success(request, "Rack removido com sucesso")
-        else:
-            messages.error(request, "Erro ao remover rack")
+        messages.success(request, "Rack removido com sucesso")
 
     return redirect('../rack/')
 
